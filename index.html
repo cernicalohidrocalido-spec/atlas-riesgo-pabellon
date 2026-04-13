@@ -1456,6 +1456,28 @@ function initWMSBadges(){
   refreshApiLayerSelector();
 }
 
+function validateMiCapasBindings(){
+  const idsUI = new Set();
+  document.querySelectorAll('[onclick*="toggleMiCapa("]').forEach(el=>{
+    const oc = el.getAttribute('onclick') || '';
+    const m = oc.match(/toggleMiCapa\('([^']+)'/);
+    if(m && m[1]) idsUI.add(m[1]);
+  });
+
+  const idsCfg = new Set(Object.keys(MIS_CAPAS_INDEX));
+  const missing = [...idsUI].filter(id=>!idsCfg.has(id));
+  const unused  = [...idsCfg].filter(id=>!idsUI.has(id));
+
+  if(missing.length){
+    console.warn('[Atlas] toggleMiCapa sin archivo en MIS_CAPAS:', missing);
+    showToast(`⚠ ${missing.length} capas sin archivo en MIS_CAPAS: ${missing.join(', ')}`,7000);
+  }
+
+  if(unused.length){
+    console.info('[Atlas] MIS_CAPAS sin toggle en panel:', unused);
+  }
+}
+
 map.on('click',async e=>{
   if(mOn) return;
   const activeIds=Object.keys(WMS).filter(id=>wmsOn[id]);
@@ -1520,7 +1542,7 @@ new Chart(document.getElementById('pChart'),{type:'bar',data:{labels:['E','F','M
 new Chart(document.getElementById('rChart'),{type:'doughnut',data:{labels:['Inundación','Incendio','Heladas','Erosión','Sequía','Sismos'],datasets:[{data:[28,22,20,15,10,5],backgroundColor:['#2563eb','#dc2626','#7c3aed','#ea580c','#d97706','#0f766e'],borderWidth:2,borderColor:'#fff'}]},options:{plugins:{legend:{display:true,position:'right',labels:{color:'#475569',font:{size:9},boxWidth:9,padding:6}}}}});
 
 // Start
-window.onload=()=>{showLd();initWMSBadges();setTimeout(hideLd,1800);};
+window.onload=()=>{showLd();initWMSBadges();validateMiCapasBindings();setTimeout(hideLd,1800);};
 </script>
 </body>
 </html>
