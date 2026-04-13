@@ -690,17 +690,17 @@ map.on('mousemove',e=>{
 const WMS_URL = 'https://mapas.inegi.org.mx/geoserver/wms';
 const WMS = {
   'inegi-mun':         { label:'Municipal',                     layers:['Municipal'],                                                       opacity:0.72 },
-  'inegi-est':         { label:'AGEB',                          layers:['AGEB'],                                                            opacity:0.70 },
-  'inegi-loc':         { label:'Colonias y vialidades',         layers:['Colonias','Vialidades'],                                           opacity:0.78 },
-  'inegi-hid':         { label:'Hidrografía',                   layers:['Corrientes de agua','Cuerpos de agua','Presas'],                   opacity:0.78 },
-  'inegi-cam':         { label:'Vías de comunicación',          layers:['Carreteras','Terracerías','Caminos rurales','Vías férreas'],       opacity:0.82 },
-  'inegi-topo':        { label:'Curvas de nivel',               layers:['Curvas de nivel'],                                                 opacity:0.82 },
-  'inegi-uso':         { label:'Uso del suelo y vegetación',    layers:['Uso del suelo y vegetación'],                                      opacity:0.52 },
-  'inegi-clima-prec':  { label:'Precipitación media anual',     layers:['Precipitación media anual'],                                       opacity:0.45 },
-  'inegi-clima-temp':  { label:'Temperatura media anual',       layers:['Temperatura media anual'],                                         opacity:0.45 },
-  'inegi-geol-fallas': { label:'Fallas y fracturas',            layers:['Fallas y fracturas'],                                              opacity:0.84 },
-  'inegi-hidro-div':   { label:'División hidrológica',          layers:['División hidrológica'],                                            opacity:0.64 },
-  'inegi-topoformas':  { label:'Sistemas de topoformas',        layers:['Sistemas de Topoformas'],                                          opacity:0.62 }
+  'inegi-est':         { label:'AGEB',                          layers:['AGEBS'],                                                           opacity:0.70 },
+  'inegi-loc':         { label:'Colonias y vialidades',         layers:['mg_Manzanas','red_vial'],                                          opacity:0.78 },
+  'inegi-hid':         { label:'Hidrografía',                   layers:['Corrientes_de_agua','Cuerpos_de_agua','presas'],                  opacity:0.78 },
+  'inegi-cam':         { label:'Vías de comunicación',          layers:['Carreteras','Terracerias','caminos','viaferrea'],                 opacity:0.82 },
+  'inegi-topo':        { label:'Curvas de nivel',               layers:['curvas_nivel'],                                                    opacity:0.82 },
+  'inegi-uso':         { label:'Uso de suelo y vegetación',     layers:['T_R_U_B1_2_Uso_de_suelo','T_R_U_B2_2_Tipos_de_vegetacion'],       opacity:0.52 },
+  'inegi-clima-prec':  { label:'Precipitación media anual',     layers:['T_R_C_B2_3_Precipitacion_anual'],                                 opacity:0.45 },
+  'inegi-clima-temp':  { label:'Temperatura media anual',       layers:['T_R_C_B2_1_Temperatura_media_anual'],                             opacity:0.45 },
+  'inegi-geol-fallas': { label:'Fallas y fracturas',            layers:['fallas_y_fracturas'],                                             opacity:0.84 },
+  'inegi-hidro-div':   { label:'División hidrológica',          layers:['Division_Hidrologica'],                                           opacity:0.64 },
+  'inegi-topoformas':  { label:'Sistemas de topoformas',        layers:['sistema_topoformas'],                                             opacity:0.62 }
 };
 
 // ── TILES XYZ DE INEGI (funcionan sin CORS porque son imágenes, no datos) ──
