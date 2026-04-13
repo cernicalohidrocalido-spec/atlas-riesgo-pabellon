@@ -73,6 +73,10 @@ header{height:var(--hdr);background:#1e3a8a;display:flex;align-items:center;gap:
 .bmbtns{display:flex;gap:3px}
 .bmb{padding:3px 7px;border-radius:4px;font-size:10px;cursor:pointer;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;transition:all .15s}
 .bmb.active{background:var(--blue);border-color:var(--blue);color:white}.bmb:hover:not(.active){background:#dbeafe;border-color:#93c5fd;color:var(--blue)}
+.apiop{position:absolute;bottom:82px;left:10px;z-index:500;background:white;border:1px solid #cbd5e1;border-radius:7px;padding:8px;box-shadow:0 2px 8px rgba(0,0,0,.10);width:220px}
+.apiop select,.apiop input[type=range]{width:100%}
+.apiop select{font-size:10px;border:1px solid #cbd5e1;border-radius:4px;padding:4px;background:#fff;color:#334155;margin-bottom:6px}
+.apiopv{font-size:10px;color:#475569;text-align:right;margin-top:2px}
 .mbar{position:absolute;bottom:46px;left:50%;transform:translateX(-50%);z-index:500;background:white;border:1px solid #93c5fd;border-radius:5px;padding:5px 12px;font-size:11px;color:var(--t2);display:none;box-shadow:0 2px 8px rgba(0,0,0,.10)}
 .mbar.show{display:block}#mdist{color:var(--blue);font-weight:700}
 .loadbar{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--blue),#93c5fd,transparent);background-size:200% 100%;animation:ld 1.5s infinite;z-index:9999;opacity:0;transition:opacity .3s}
@@ -569,6 +573,12 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
       <div class="bmb" id="bb-dark" onclick="setBM('dark',this)">Oscuro</div>
     </div>
   </div>
+  <div class="apiop" id="apiOpacityBox">
+    <div class="bml">Transparencia API</div>
+    <select id="apiLayerSel" onchange="syncApiOpacityUI()"></select>
+    <input id="apiOpacityRange" type="range" min="10" max="100" value="75" oninput="setSelectedWMSOpacity(this.value)">
+    <div class="apiopv" id="apiOpacityVal">75%</div>
+  </div>
   <div id="map"></div>
 </div>
 
@@ -1001,12 +1011,101 @@ function buildWMSLayer(id){
   });
 }
 
+function refreshApiLayerSelector(){
+  const sel=document.getElementById('apiLayerSel');
+  if(!sel) return;
+  const current=sel.value;
+  sel.innerHTML=Object.keys(WMS).map(id=>{
+    const active=wmsOn[id]?'● ':'';
+    return `<option value="${id}">${active}${WMS[id].label}</option>`;
+  }).join('');
+  if(current && WMS[current]) sel.value=current;
+  syncApiOpacityUI();
+}
+
+function syncApiOpacityUI(){
+  const sel=document.getElementById('apiLayerSel');
+  const rng=document.getElementById('apiOpacityRange');
+  const val=document.getElementById('apiOpacityVal');
+  if(!sel||!rng||!val||!WMS[sel.value]) return;
+  const pct=Math.round((WMS[sel.value].opacity??0.75)*100);
+  rng.value=pct;
+  val.textContent=`${pct}%`;
+}
+
+function setSelectedWMSOpacity(pct){
+  const sel=document.getElementById('apiLayerSel');
+  const val=document.getElementById('apiOpacityVal');
+  if(!sel||!WMS[sel.value]) return;
+  const opacity=Math.max(0.1,Math.min(1,Number(pct)/100));
+  WMS[sel.value].opacity=opacity;
+  if(wmsL[sel.value]) wmsL[sel.value].setOpacity(opacity);
+  if(val) val.textContent=`${Math.round(opacity*100)}%`;
+}
+
+async function getWMSFeatureInfo(id,latlng){
+  const layer=wmsL[id];
+  if(!layer) return null;
+  const size=map.getSize();
+  const bounds=map.getBounds();
+  const sw=map.options.crs.project(bounds.getSouthWest());
+  const ne=map.options.crs.project(bounds.getNorthEast());
+  const point=map.latLngToContainerPoint(latlng,map.getZoom());
+  const base={
+    service:'WMS',request:'GetFeatureInfo',version:'1.1.1',
+    srs:'EPSG:3857',styles:'',transparent:true,format:'image/png',
+    bbox:[sw.x,sw.y,ne.x,ne.y].join(','),width:size.x,height:size.y,
+    layers:layer.wmsParams.layers,query_layers:layer.wmsParams.layers,
+    x:Math.round(point.x),y:Math.round(point.y),feature_count:8
+  };
+  const tryFormats=['application/json','text/html','text/plain'];
+  for(const infoFormat of tryFormats){
+    const params={...base,info_format:infoFormat};
+    const url=WMS_URL+L.Util.getParamString(params,WMS_URL,true);
+    try{
+      const res=await fetch(url);
+      if(!res.ok) continue;
+      const ct=(res.headers.get('content-type')||'').toLowerCase();
+      const txt=await res.text();
+      if(txt.includes('ServiceException')||txt.includes('Service Exception')) continue;
+      if(ct.includes('application/json')){
+        const json=JSON.parse(txt);
+        const feats=json.features||[];
+        if(!feats.length) continue;
+        return {id,type:'json',features:feats};
+      }
+      if(infoFormat==='text/html' && txt.trim()) return {id,type:'html',html:txt};
+      if(infoFormat==='text/plain' && txt.trim()) return {id,type:'text',text:txt};
+    }catch(_e){ }
+  }
+  return null;
+}
+
+function renderWMSInfo(results){
+  if(!results.length) return '';
+  return results.map(r=>{
+    const title=WMS[r.id]?.label||r.id;
+    if(r.type==='json'){
+      const rows=r.features.slice(0,4).map(f=>Object.entries(f.properties||{})
+        .filter(([,v])=>v!==null&&v!==''&&v!==' ')
+        .slice(0,10)
+        .map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`)
+        .join('')
+      ).join('');
+      return `<div class="ptitle" style="font-size:12px">🧩 ${title}</div><table class="ptable">${rows||'<tr><td>Sin datos</td><td>—</td></tr>'}</table>`;
+    }
+    if(r.type==='html') return `<div class="ptitle" style="font-size:12px">🧩 ${title}</div>${r.html}`;
+    return `<div class="ptitle" style="font-size:12px">🧩 ${title}</div><pre style="white-space:pre-wrap;font-size:10px;color:#334155;max-height:180px;overflow:auto">${r.text}</pre>`;
+  }).join('<hr style="border:none;border-top:1px solid #e2e8f0;margin:8px 0">');
+}
+
 function toggleWMS(id,el){
   const tog=el.querySelector('.ltog');
   if(wmsOn[id]){
     map.removeLayer(wmsL[id]);
     tog.classList.remove('on'); el.classList.remove('on'); wmsOn[id]=false;
     setWMSState(id,'idle');
+    refreshApiLayerSelector();
     return;
   }
   if(!wmsL[id]) buildWMSLayer(id);
@@ -1014,6 +1113,7 @@ function toggleWMS(id,el){
   setWMSState(id,'loading');
   wmsL[id].addTo(map);
   tog.classList.add('on'); el.classList.add('on'); wmsOn[id]=true;
+  refreshApiLayerSelector();
 }
 
 // ============================================================
@@ -1302,7 +1402,29 @@ function initWMSBadges(){
   Object.keys(WMS).forEach(id=>{
     setWMSState(id,'idle');
   });
+  refreshApiLayerSelector();
 }
+
+map.on('click',async e=>{
+  if(mOn) return;
+  const activeIds=Object.keys(WMS).filter(id=>wmsOn[id]);
+  if(!activeIds.length) return;
+  showLd();
+  const chunks=[];
+  for(const id of activeIds){
+    const info=await getWMSFeatureInfo(id,e.latlng);
+    if(info) chunks.push(info);
+  }
+  hideLd();
+  if(!chunks.length){
+    showToast('ℹ Sin atributos API en este punto.',3000);
+    return;
+  }
+  L.popup({maxWidth:360})
+    .setLatLng(e.latlng)
+    .setContent(`<div class="ptitle">📑 Atributos capas API</div>${renderWMSInfo(chunks)}`)
+    .openOn(map);
+});
 
 // ============================================================
 // EXPORT
