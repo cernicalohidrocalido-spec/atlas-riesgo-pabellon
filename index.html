@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atlas de Riesgo Municipal — Pabellón de Arteaga, Ags.</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f0f4f9;--bg2:#fff;--bg3:#f4f7fb;--bg4:#e8eef6;--bdr:rgba(30,64,175,.10);--bdr2:rgba(30,64,175,.20);--t:#0f172a;--t2:#334155;--t3:#64748b;--blue:#1d4ed8;--blue2:#2563eb;--blue3:#1e3a8a;--green:#16a34a;--amber:#b45309;--orange:#c2410c;--red:#dc2626;--sidebar:304px;--panel:336px;--hdr:54px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t);height:100vh;overflow:hidden;display:flex;flex-direction:column;font-size:13px}
+header{height:var(--hdr);background:#1e3a8a;display:flex;align-items:center;gap:10px;padding:0 14px;flex-shrink:0;z-index:1000;border-bottom:1px solid #1e40af}
+.logo{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);color:#fff;font-weight:700;font-size:10px;padding:4px 9px;border-radius:5px;letter-spacing:.5px;white-space:nowrap}
+.htitle{flex:1}.htitle h1{font-size:14px;font-weight:600;color:#fff;line-height:1.2}.htitle p{font-size:10px;color:rgba(255,255,255,.55);margin-top:1px}
+.hactions{display:flex;gap:6px;align-items:center}
+.btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.9);padding:5px 10px;border-radius:5px;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:all .15s}
+.btn:hover{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.5)}
+.btn.primary{background:#fff;border-color:#fff;color:#1e3a8a;font-weight:600}.btn.primary:hover{background:#dbeafe}
+.live-badge{background:rgba(34,197,94,.2);color:#86efac;border:1px solid rgba(134,239,172,.4);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;display:flex;align-items:center;gap:4px}
+.live-badge::before{content:'';width:5px;height:5px;border-radius:50%;background:#86efac;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.main{flex:1;display:flex;overflow:hidden}
+.sidebar{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;box-shadow:2px 0 8px rgba(30,58,138,.06)}
+.stabs{display:flex;border-bottom:2px solid var(--bdr);flex-shrink:0;background:var(--bg3)}
+.stab{flex:1;padding:9px 2px;text-align:center;font-size:9px;font-weight:700;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;text-transform:uppercase;letter-spacing:.4px;margin-bottom:-2px}
+.stab.active{color:var(--blue);border-bottom-color:var(--blue);background:white}.stab:hover:not(.active){color:var(--t2);background:#eef2f9}
+.searchbar{padding:7px 10px;border-bottom:1px solid var(--bdr);background:var(--bg3);flex-shrink:0}
+.searchbar input{width:100%;background:white;border:1px solid #cbd5e1;border-radius:5px;padding:6px 10px 6px 26px;color:var(--t);font-size:11px;outline:none}
+.searchbar input:focus{border-color:var(--blue);box-shadow:0 0 0 2px #dbeafe}
+.si{position:relative}.si::before{content:'🔍';position:absolute;left:7px;top:50%;transform:translateY(-50%);font-size:11px;pointer-events:none}
+.scontent{flex:1;overflow-y:auto;padding:10px}
+.scontent::-webkit-scrollbar{width:3px}.scontent::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
+.slabel{font-size:9px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px;padding-bottom:3px;border-bottom:1px solid #dbeafe}
+.slabel:first-child{margin-top:0}
+.litem{display:flex;align-items:center;gap:7px;padding:6px 7px;border-radius:6px;cursor:pointer;border:1px solid transparent;transition:all .15s;margin-bottom:2px;user-select:none}
+.litem:hover{background:#eff6ff;border-color:#bfdbfe}.litem.on{background:#eff6ff;border-color:#bfdbfe}
+.ldot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.linfo{flex:1;min-width:0}.lname{font-size:11px;color:var(--t);font-weight:500}.lsub{font-size:9px;color:var(--t3);margin-top:1px}
+.ltog{width:28px;height:15px;border-radius:8px;background:#e2e8f0;border:1px solid #cbd5e1;position:relative;transition:background .2s;flex-shrink:0}
+.ltog::after{content:'';position:absolute;top:2px;left:2px;width:9px;height:9px;border-radius:50%;background:#94a3b8;transition:all .2s}
+.ltog.on{background:#bfdbfe;border-color:var(--blue)}.ltog.on::after{left:15px;background:var(--blue)}
+.wbadge{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600;flex-shrink:0}
+/* Collapsible category groups */
+.cat-group{margin-bottom:4px;border:1px solid var(--bdr);border-radius:7px;overflow:hidden}
+.cat-hdr{display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg3);cursor:pointer;user-select:none;transition:background .15s}
+.cat-hdr:hover{background:#e8eef6}
+.cat-icon{font-size:13px;flex-shrink:0}
+.cat-title{flex:1;font-size:10px;font-weight:700;color:var(--blue3);text-transform:uppercase;letter-spacing:.5px}
+.cat-count{font-size:9px;background:#dbeafe;color:var(--blue);padding:1px 6px;border-radius:10px;border:1px solid #bfdbfe;font-weight:600}
+.cat-arrow{font-size:10px;color:var(--t3);transition:transform .2s;margin-left:2px}
+.cat-group.open .cat-arrow{transform:rotate(90deg)}
+.cat-body{display:none;padding:5px 6px 6px}
+.cat-group.open .cat-body{display:block}
+.wok{background:#dcfce7;color:#166534;border:1px solid #86efac}.wwarn{background:#fef9c3;color:#854d0e;border:1px solid #fde047}
+.werr{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}.wload{background:#f0f9ff;color:#075985;border:1px solid #7dd3fc}
+.wgeo{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.legend{padding:9px 12px;border-top:2px solid #dbeafe;flex-shrink:0;background:var(--bg3)}
+.legtitle{font-size:9px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.legitems{display:flex;flex-wrap:wrap;gap:5px}.legitem{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--t3)}
+.legdot{width:8px;height:8px;border-radius:2px}
+.mapwrap{flex:1;position:relative}
+#map{width:100%;height:100%}
+.mctrl{position:absolute;top:10px;left:10px;z-index:500;display:flex;flex-direction:column;gap:5px}
+.mbt{width:30px;height:30px;background:white;border:1px solid #cbd5e1;border-radius:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);font-size:13px;transition:all .15s;box-shadow:0 1px 4px rgba(0,0,0,.10)}
+.mbt:hover{background:#eff6ff;color:var(--blue);border-color:#93c5fd}.mbt.atool{background:#dbeafe;border-color:var(--blue);color:var(--blue)}
+.cbar{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(255,255,255,.96);border:1px solid #cbd5e1;border-radius:5px;padding:4px 10px;font-size:10px;color:var(--t3);white-space:nowrap;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+#ctext{color:var(--blue);font-weight:600;font-family:monospace;font-size:11px}
+.scalebar{position:absolute;bottom:10px;right:calc(var(--panel) + 10px);z-index:500;background:rgba(255,255,255,.92);border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;font-size:10px;color:var(--t3);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.bmsel{position:absolute;bottom:10px;left:10px;z-index:500;background:white;border:1px solid #cbd5e1;border-radius:7px;padding:7px;box-shadow:0 2px 8px rgba(0,0,0,.10)}
+.bml{font-size:9px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.bmbtns{display:flex;gap:3px}
+.bmb{padding:3px 7px;border-radius:4px;font-size:10px;cursor:pointer;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;transition:all .15s}
+.bmb.active{background:var(--blue);border-color:var(--blue);color:white}.bmb:hover:not(.active){background:#dbeafe;border-color:#93c5fd;color:var(--blue)}
+.mbar{position:absolute;bottom:46px;left:50%;transform:translateX(-50%);z-index:500;background:white;border:1px solid #93c5fd;border-radius:5px;padding:5px 12px;font-size:11px;color:var(--t2);display:none;box-shadow:0 2px 8px rgba(0,0,0,.10)}
+.mbar.show{display:block}#mdist{color:var(--blue);font-weight:700}
+.loadbar{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--blue),#93c5fd,transparent);background-size:200% 100%;animation:ld 1.5s infinite;z-index:9999;opacity:0;transition:opacity .3s}
+.loadbar.show{opacity:1}@keyframes ld{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.dropzone{position:absolute;inset:0;z-index:2000;background:rgba(29,78,216,.18);border:3px dashed var(--blue);display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.dropzone.show{display:flex}
+.dropinner{background:white;border-radius:12px;padding:24px 36px;text-align:center;box-shadow:0 8px 32px rgba(30,58,138,.15)}
+.dropinner h3{font-size:16px;font-weight:700;color:var(--blue3);margin-bottom:6px}.dropinner p{font-size:12px;color:var(--t3)}
+.rpanel{width:var(--panel);background:var(--bg2);border-left:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;box-shadow:-2px 0 8px rgba(30,58,138,.06)}
+.rph{padding:10px 12px;border-bottom:1px solid var(--bdr);flex-shrink:0;background:var(--bg3)}
+.rph h2{font-size:12px;font-weight:700;color:var(--blue3)}.rph p{font-size:10px;color:var(--t3);margin-top:1px}
+.rpb{flex:1;overflow-y:auto;padding:10px}
+.rpb::-webkit-scrollbar{width:3px}.rpb::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
+.rmeter{background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin-bottom:10px}
+.rml{font-size:9px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.rmt{font-size:18px;font-weight:700;color:var(--orange);margin-bottom:2px}.rms{font-size:10px;color:var(--t3);margin-bottom:8px}
+.rmbar-w{background:#e2e8f0;border-radius:4px;height:7px;overflow:hidden;margin-bottom:4px}
+.rmbar{height:100%;border-radius:4px;background:linear-gradient(90deg,#22c55e,#f59e0b,#f97316)}
+.rmticks{display:flex;justify-content:space-between;font-size:9px;color:var(--t3)}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.scard{background:var(--bg3);border:1px solid #e2e8f0;border-radius:7px;padding:8px;text-align:center}
+.snum{font-size:16px;font-weight:700;color:var(--blue3)}.slb{font-size:9px;color:var(--t3);margin-top:1px}.str{font-size:9px;margin-top:2px}
+.up{color:var(--red)}.down{color:var(--green)}.neutral{color:var(--t3)}
+.rcard{background:var(--bg3);border:1px solid #e2e8f0;border-radius:7px;padding:8px 10px;margin-bottom:5px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
+.rcard:hover{background:#eff6ff;border-color:#93c5fd}
+.ricon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.rcinfo{flex:1;min-width:0}.rcname{font-size:11px;font-weight:600;color:var(--t)}.rcsub{font-size:9px;color:var(--t3);margin-top:1px}
+.rlevel{font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;flex-shrink:0}
+.la{background:#ffedd5;color:#9a3412;border:1px solid #fdba74}.lma{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.lm{background:#fef9c3;color:#854d0e;border:1px solid #fde047}.lb{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.chwrap{background:var(--bg3);border:1px solid #e2e8f0;border-radius:7px;padding:10px;margin-bottom:10px}
+.chtitle{font-size:10px;font-weight:600;color:var(--t2);margin-bottom:8px}
+.itab{width:100%;border-collapse:collapse;font-size:10px}
+.itab tr{border-bottom:1px solid #f1f5f9}.itab tr:last-child{border-bottom:none}
+.itab td{padding:5px 3px}.itab td:first-child{color:var(--t3)}.itab td:last-child{color:var(--blue3);font-weight:600;text-align:right}
+.tc{display:none}.tc.active{display:block}
+.alitem{background:var(--bg3);border-radius:7px;padding:9px 10px;margin-bottom:5px;border-left:3px solid;display:flex;gap:7px;border-top:1px solid #f1f5f9;border-right:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9}
+.altitle{font-size:11px;font-weight:600;color:var(--t)}.albody{font-size:10px;color:var(--t3);margin-top:2px;line-height:1.5}.altime{font-size:9px;color:#94a3b8;margin-top:3px}
+.ulcard{background:white;border:1px solid #e2e8f0;border-radius:7px;padding:8px 10px;margin-bottom:5px}
+.ulcard:hover{border-color:#93c5fd}.ulhead{display:flex;align-items:center;gap:7px}
+.ulcolor{width:10px;height:10px;border-radius:3px;flex-shrink:0}.ulname{flex:1;font-size:11px;font-weight:600;color:var(--t)}
+.ulcount{font-size:9px;color:var(--t3);background:var(--bg3);padding:1px 5px;border-radius:10px;border:1px solid #e2e8f0}
+.ulactions{display:flex;gap:4px;margin-top:6px}
+.uabtn{background:var(--bg3);border:1px solid #e2e8f0;color:var(--t3);padding:2px 7px;border-radius:4px;font-size:9px;cursor:pointer;transition:all .15s}
+.uabtn:hover{background:#eff6ff;border-color:#93c5fd;color:var(--blue)}.uabtn.del:hover{background:#fee2e2;border-color:#fca5a5;color:var(--red)}
+.dropbtn{width:100%;background:white;border:2px dashed #cbd5e1;border-radius:7px;padding:14px;text-align:center;cursor:pointer;transition:all .15s;color:var(--t3);font-size:11px}
+.dropbtn:hover{border-color:var(--blue);color:var(--blue);background:#eff6ff}
+.gstep{background:var(--bg3);border:1px solid #e2e8f0;border-left:3px solid var(--blue);border-radius:0 7px 7px 0;padding:9px 12px;margin-bottom:7px}
+.gsnum{font-size:10px;font-weight:700;color:var(--blue);margin-bottom:3px}.gstext{font-size:11px;color:var(--t2);line-height:1.6}
+.gscode{font-family:monospace;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:2px 6px;font-size:10px;color:var(--blue3)}
+.leaflet-popup-content-wrapper{background:white!important;border:1px solid #e2e8f0!important;border-radius:9px!important;box-shadow:0 4px 24px rgba(30,58,138,.12)!important}
+.leaflet-popup-tip{background:white!important}
+.leaflet-popup-content{color:var(--t)!important;font-size:12px!important;max-width:260px}
+.ptitle{font-weight:700;font-size:13px;margin-bottom:6px;color:var(--blue3)}
+.prow{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--t3);margin-bottom:3px;border-bottom:1px solid #f8fafc;padding-bottom:3px}
+.prow:last-child{border-bottom:none}.pval{color:var(--t);font-weight:500;text-align:right;max-width:150px;word-break:break-word}
+.map-tooltip{background:white!important;border:1px solid #cbd5e1!important;color:var(--t)!important;border-radius:5px!important;font-size:11px!important;padding:5px 9px!important;box-shadow:0 2px 8px rgba(0,0,0,.10)!important}
+.ptable{width:100%;border-collapse:collapse;font-size:11px;max-height:200px;overflow-y:auto;display:block}
+.ptable tr{border-bottom:1px solid #f1f5f9}.ptable td{padding:4px 6px;color:var(--t3)}
+.ptable td:first-child{font-weight:500;color:var(--t2);min-width:80px}.ptable td:last-child{color:var(--t);word-break:break-all}
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:9999;align-items:center;justify-content:center}
+.modal-ov.show{display:flex}
+.modal{background:white;border:1px solid #e2e8f0;border-radius:10px;width:500px;max-width:95vw;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+.mhead{padding:14px 18px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;background:var(--bg3)}
+.mhead h3{font-size:14px;font-weight:700;color:var(--blue3)}.mbody{padding:18px}
+.mfoot{padding:10px 18px;border-top:1px solid #f1f5f9;display:flex;gap:6px;justify-content:flex-end;background:var(--bg3)}
+.fg{margin-bottom:12px}.flabel{font-size:11px;color:var(--t2);margin-bottom:3px;display:block;font-weight:500}
+.finput,.fsel{width:100%;background:white;border:1px solid #cbd5e1;color:var(--t);border-radius:5px;padding:6px 9px;font-size:11px;outline:none}
+.finput:focus,.fsel:focus{border-color:var(--blue);box-shadow:0 0 0 2px #dbeafe}
+.cbrow{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:11px;color:var(--t2)}
+input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
+.modal .btn{background:white;border:1px solid #e2e8f0;color:var(--t3);padding:5px 12px}
+.modal .btn:hover{background:#f1f5f9;color:var(--t)}
+.modal .btn.primary{background:var(--blue);border-color:var(--blue);color:white}.modal .btn.primary:hover{background:#1e40af}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:white;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;z-index:9998;box-shadow:0 4px 16px rgba(0,0,0,.12);font-size:11px;color:var(--t2);max-width:380px;display:none}
+.toast.show{display:block}
+@media(max-width:900px){.rpanel{display:none}:root{--sidebar:260px}}
+@media(max-width:620px){.sidebar{display:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ATLAS RIESGO</div>
+  <div class="htitle">
+    <h1>Pabellón de Arteaga — Aguascalientes</h1>
+    <p>Sistema Municipal de Información de Riesgos · v3.0 · CENAPRED / INEGI / CONABIO</p>
+  </div>
+  <div class="hactions">
+    <div class="live-badge">EN VIVO</div>
+    <button class="btn" onclick="toggleMeasure()" id="mBtn">📏 Medir</button>
+    <button class="btn" onclick="openExport()">⬇ Exportar</button>
+    <button class="btn primary" onclick="printAtlas()">🖨 Imprimir</button>
+  </div>
+</header>
+
+<div class="main">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="stabs">
+    <div class="stab active" onclick="switchTab(this,'capas')">Capas</div>
+    <div class="stab" onclick="switchTab(this,'mias')">Mis capas</div>
+    <div class="stab" onclick="switchTab(this,'alertas')">Alertas</div>
+    <div class="stab" onclick="switchTab(this,'github')">GitHub</div>
+  </div>
+  <div class="searchbar"><div class="si"><input id="sSearch" type="text" placeholder="Buscar capa o localidad..." oninput="filterLayers(this.value)"></div></div>
+  <div class="scontent">
+
+    <!-- CAPAS TAB -->
+    <div class="tc active" id="tab-capas">
+
+      <!-- BASE → siempre visible, sin grupo -->
+      <div style="margin-bottom:6px">
+        <div class="litem" id="li-limite" onclick="toggleLocal('limite',this)">
+          <div class="ldot" style="background:#1d4ed8;border-radius:50%"></div>
+          <div class="linfo"><div class="lname" style="font-weight:700">Límite municipal</div><div class="lsub">INEGI MGN 2020 · 01-006</div></div>
+          <div class="ltog"></div>
+        </div>
+        <div class="litem" id="li-locs" onclick="toggleLocal('locs',this)">
+          <div class="ldot" style="background:#475569;border-radius:50%"></div>
+          <div class="linfo"><div class="lname" style="font-weight:700">Localidades del municipio</div><div class="lsub">8 localidades · INEGI 2020</div></div>
+          <div class="ltog"></div>
+        </div>
+      </div>
+
+      <!-- ═══ 1. HIDROMETEOROLÓGICOS ═══ -->
+      <div class="cat-group open" id="cat-hidro">
+        <div class="cat-hdr" onclick="toggleCat('cat-hidro')">
+          <span class="cat-icon">🌊</span>
+          <span class="cat-title">Hidrometeorológicos</span>
+          <span class="cat-count">6</span>
+          <span class="cat-arrow">▶</span>
+        </div>
+        <div class="cat-body">
+          <!-- Hidrografía: ríos, arroyos, cuerpos de agua — peligro origen hídrico -->
+          <div class="litem" id="li-inegi-hid" onclick="toggleGJ('inegi-hid',this)">
+            <div class="ldot" style="background:#0ea5e9"></div>
+            <div class="linfo"><div class="lname">Hidrografía · ríos y arroyos</div><div class="lsub">INEGI RHA 2017 · Arroyo El Rayo, San Agustín</div></div>
+            <span class="wbadge wgeo" id="st-inegi-hid">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Cuerpos de agua propios del municipio (presas, bordos) -->
+          <div class="litem" id="li-cuerpos-agua" onclick="toggleMiCapa('cuerpos-agua',this)">
+            <div class="ldot" style="background:#0369a1"></div>
+            <div class="linfo"><div class="lname">Cuerpos de agua</div><div class="lsub">Cuerpo_agua · presas y bordos</div></div>
+            <span class="wbadge wwarn" id="st-cuerpos-agua">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Zonas de peligro por inundación -->
+          <div class="litem" id="li-inund" onclick="toggleLocal('inund',this)">
+            <div class="ldot" style="background:#3b82f6"></div>
+            <div class="linfo"><div class="lname">Zonas inundables locales</div><div class="lsub">CONAGUA / PC Municipal · 3 polígonos</div></div>
+            <div class="ltog"></div>
+          </div>
+          <div class="litem" id="li-cnp-inund" onclick="toggleGJ('cnp-inund',this)">
+            <div class="ldot" style="background:#1e40af"></div>
+            <div class="linfo"><div class="lname">Peligro por inundación</div><div class="lsub">CENAPRED · ANR 2020 · 4 zonas</div></div>
+            <span class="wbadge wgeo" id="st-cnp-inund">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Sequías y heladas: fenómenos hidrometeorológicos -->
+          <div class="litem" id="li-cnp-seq" onclick="toggleGJ('cnp-seq',this)">
+            <div class="ldot" style="background:#d97706"></div>
+            <div class="linfo"><div class="lname">Sequías · estrés hídrico</div><div class="lsub">CENAPRED · Monitor CONAGUA · Grado D2</div></div>
+            <span class="wbadge wgeo" id="st-cnp-seq">GEO</span><div class="ltog"></div>
+          </div>
+          <div class="litem" id="li-cnp-hela" onclick="toggleGJ('cnp-hela',this)">
+            <div class="ldot" style="background:#818cf8"></div>
+            <div class="linfo"><div class="lname">Heladas y bajas temperaturas</div><div class="lsub">SMN / CENAPRED · 20–28 días/año</div></div>
+            <span class="wbadge wgeo" id="st-cnp-hela">GEO</span><div class="ltog"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ 2. GEOLÓGICOS ═══ -->
+      <div class="cat-group" id="cat-geo">
+        <div class="cat-hdr" onclick="toggleCat('cat-geo')">
+          <span class="cat-icon">🪨</span>
+          <span class="cat-title">Geológicos</span>
+          <span class="cat-count">5</span>
+          <span class="cat-arrow">▶</span>
+        </div>
+        <div class="cat-body">
+          <!-- Fallas y grietas: peligro geológico local directo -->
+          <div class="litem" id="li-fallas" onclick="toggleMiCapa('fallas',this)">
+            <div class="ldot" style="background:#b91c1c"></div>
+            <div class="linfo"><div class="lname">Grietas y fallas 2024</div><div class="lsub">GrietasYfallas2024_Clip1 · levantamiento propio</div></div>
+            <span class="wbadge wwarn" id="st-fallas">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Sismicidad regional -->
+          <div class="litem" id="li-cnp-sism" onclick="toggleGJ('cnp-sism',this)">
+            <div class="ldot" style="background:#7c3aed"></div>
+            <div class="linfo"><div class="lname">Regionalización sísmica</div><div class="lsub">CENAPRED · Zona B · CFE 2015 · 0.16–0.32g</div></div>
+            <span class="wbadge wgeo" id="st-cnp-sism">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Zonas sísmicas municipales levantadas por PCP -->
+          <div class="litem" id="li-pcp" onclick="toggleMiCapa('pcp',this)">
+            <div class="ldot" style="background:#6d28d9"></div>
+            <div class="linfo"><div class="lname">Zonificación sísmica PCP</div><div class="lsub">PCP_PA1_Pabellón_de_Arteaga_ZS</div></div>
+            <span class="wbadge wwarn" id="st-pcp">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Erosión: proceso geomorfológico -->
+          <div class="litem" id="li-cnb-er" onclick="toggleGJ('cnb-er',this)">
+            <div class="ldot" style="background:#f97316"></div>
+            <div class="linfo"><div class="lname">Erosión potencial de suelos</div><div class="lsub">CONABIO 2017 · Pérdida ton/ha·año</div></div>
+            <span class="wbadge wgeo" id="st-cnb-er">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Curvas de nivel: base geomorfológica -->
+          <div class="litem" id="li-inegi-topo" onclick="toggleGJ('inegi-topo',this)">
+            <div class="ldot" style="background:#d97706"></div>
+            <div class="linfo"><div class="lname">Curvas de nivel · relieve</div><div class="lsub">INEGI Altimetría · 1900–2050 msnm</div></div>
+            <span class="wbadge wgeo" id="st-inegi-topo">GEO</span><div class="ltog"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ 3. ANTRÓPICOS ═══ -->
+      <div class="cat-group" id="cat-antro">
+        <div class="cat-hdr" onclick="toggleCat('cat-antro')">
+          <span class="cat-icon">🏭</span>
+          <span class="cat-title">Antrópicos</span>
+          <span class="cat-count">7</span>
+          <span class="cat-arrow">▶</span>
+        </div>
+        <div class="cat-body">
+          <!-- Infraestructura vial -->
+          <div class="litem" id="li-inegi-cam" onclick="toggleGJ('inegi-cam',this)">
+            <div class="ldot" style="background:#475569"></div>
+            <div class="linfo"><div class="lname">Red de caminos · carreteras</div><div class="lsub">INEGI RNC 2019 · Fed-45, AGS-10, AGS-90</div></div>
+            <span class="wbadge wgeo" id="st-inegi-cam">GEO</span><div class="ltog"></div>
+          </div>
+          <div class="litem" id="li-carretera20" onclick="toggleMiCapa('carretera20',this)">
+            <div class="ldot" style="background:#334155"></div>
+            <div class="linfo"><div class="lname">Carretera 20 especificaciones</div><div class="lsub">carretera20_esp_l · sección transversal</div></div>
+            <span class="wbadge wwarn" id="st-carretera20">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Infraestructura crítica: gasoducto, línea eléctrica -->
+          <div class="litem" id="li-gasoducto" onclick="toggleMiCapa('gasoducto',this)">
+            <div class="ldot" style="background:#f59e0b"></div>
+            <div class="linfo"><div class="lname">Gasoducto</div><div class="lsub">Infraestructura gas natural · trayecto</div></div>
+            <span class="wbadge wwarn" id="st-gasoducto">GEO</span><div class="ltog"></div>
+          </div>
+          <div class="litem" id="li-linea-morada" onclick="toggleMiCapa('linea-morada',this)">
+            <div class="ldot" style="background:#7c3aed"></div>
+            <div class="linfo"><div class="lname">Línea de infraestructura</div><div class="lsub">Línea morada · infraestructura municipal</div></div>
+            <span class="wbadge wwarn" id="st-linea-morada">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Pozos de agua potable: infraestructura hidráulica antrópica -->
+          <div class="litem" id="li-pozo" onclick="toggleLocal('pozo',this)">
+            <div class="ldot" style="background:#0ea5e9"></div>
+            <div class="linfo"><div class="lname">Pozos de agua potable</div><div class="lsub">CAPAMA · 8 pozos activos</div></div>
+            <div class="ltog"></div>
+          </div>
+          <!-- Uso de suelo: resultado de actividades humanas -->
+          <div class="litem" id="li-inegi-uso" onclick="toggleGJ('inegi-uso',this)">
+            <div class="ldot" style="background:#16a34a"></div>
+            <div class="linfo"><div class="lname">Uso de suelo y vegetación</div><div class="lsub">INEGI Serie VII 2018 · urbano/agrícola/natural</div></div>
+            <span class="wbadge wgeo" id="st-inegi-uso">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Áreas protegidas: ordenamiento territorial antrópico -->
+          <div class="litem" id="li-cnb-anp" onclick="toggleGJ('cnb-anp',this)">
+            <div class="ldot" style="background:#059669"></div>
+            <div class="linfo"><div class="lname">Áreas Naturales Protegidas</div><div class="lsub">CONANP 2022 · Sierra Fría · DOF 2002</div></div>
+            <span class="wbadge wgeo" id="st-cnb-anp">GEO</span><div class="ltog"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ 4. EXPOSICIÓN ═══ -->
+      <div class="cat-group" id="cat-expo">
+        <div class="cat-hdr" onclick="toggleCat('cat-expo')">
+          <span class="cat-icon">📍</span>
+          <span class="cat-title">Exposición</span>
+          <span class="cat-count">5</span>
+          <span class="cat-arrow">▶</span>
+        </div>
+        <div class="cat-body">
+          <!-- Predios expuestos a peligros: elementos en riesgo directo -->
+          <div class="litem" id="li-predios-fallas" onclick="toggleMiCapa('predios-fallas',this)">
+            <div class="ldot" style="background:#dc2626"></div>
+            <div class="linfo"><div class="lname">Predios en zona de falla</div><div class="lsub">PrediosFallas_AreaUrbana · viviendas expuestas</div></div>
+            <span class="wbadge wwarn" id="st-predios-fallas">GEO</span><div class="ltog"></div>
+          </div>
+          <div class="litem" id="li-predios-rurales" onclick="toggleMiCapa('predios-rurales',this)">
+            <div class="ldot" style="background:#b45309"></div>
+            <div class="linfo"><div class="lname">Predios fuera área urbana</div><div class="lsub">PrediosFueraAreaUrbana · exposición rural</div></div>
+            <span class="wbadge wwarn" id="st-predios-rurales">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Servicios e infraestructura expuesta -->
+          <div class="litem" id="li-servicios" onclick="toggleMiCapa('servicios',this)">
+            <div class="ldot" style="background:#0e7490"></div>
+            <div class="linfo"><div class="lname">Servicios públicos expuestos</div><div class="lsub">servicios_p · escuelas, clínicas, oficinas</div></div>
+            <span class="wbadge wwarn" id="st-servicios">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Población en zonas de peligro: densidad expuesta -->
+          <div class="litem" id="li-inegi-est" onclick="toggleGJ('inegi-est',this)">
+            <div class="ldot" style="background:#64748b"></div>
+            <div class="linfo"><div class="lname">Densidad de población (AGEBs)</div><div class="lsub">INEGI Censo 2020 · 5 AGEBs clasificadas</div></div>
+            <span class="wbadge wgeo" id="st-inegi-est">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Manzanas urbanas: unidad mínima de exposición -->
+          <div class="litem" id="li-inegi-mun" onclick="toggleGJ('inegi-mun',this)">
+            <div class="ldot" style="background:#2563eb"></div>
+            <div class="linfo"><div class="lname">Polígono municipal · referencia</div><div class="lsub">INEGI MGN 2020 · 01-006 · 276 km²</div></div>
+            <span class="wbadge wgeo" id="st-inegi-mun">GEO</span><div class="ltog"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ 5. VULNERABILIDAD ═══ -->
+      <div class="cat-group" id="cat-vuln">
+        <div class="cat-hdr" onclick="toggleCat('cat-vuln')">
+          <span class="cat-icon">⚠️</span>
+          <span class="cat-title">Vulnerabilidad</span>
+          <span class="cat-count">4</span>
+          <span class="cat-arrow">▶</span>
+        </div>
+        <div class="cat-body">
+          <!-- Población con menor capacidad de respuesta: adultos mayores, marginación -->
+          <div class="litem" id="li-inegi-loc" onclick="toggleGJ('inegi-loc',this)">
+            <div class="ldot" style="background:#64748b"></div>
+            <div class="linfo"><div class="lname">Estructura socioeconómica AGEB</div><div class="lsub">INEGI Censo 2020 · viviendas, carencias</div></div>
+            <span class="wbadge wgeo" id="st-inegi-loc">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Vegetación y cobertura: aumenta vulnerabilidad a incendios y erosión -->
+          <div class="litem" id="li-cnb-veg" onclick="toggleGJ('cnb-veg',this)">
+            <div class="ldot" style="background:#22c55e"></div>
+            <div class="linfo"><div class="lname">Vegetación potencial</div><div class="lsub">CONABIO · cobertura natural del municipio</div></div>
+            <span class="wbadge wgeo" id="st-cnb-veg">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Erosión activa: terreno degradado = mayor vulnerabilidad a deslaves -->
+          <div class="litem" id="li-erosion-vuln" onclick="toggleGJ('cnb-er',this)">
+            <div class="ldot" style="background:#f97316"></div>
+            <div class="linfo"><div class="lname">Grado de erosión · degradación</div><div class="lsub">CONABIO 2017 · Alto / Medio / Bajo</div></div>
+            <span class="wbadge wgeo" id="st-erosion-vuln">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Uso de suelo deteriorado: proxy de vulnerabilidad física -->
+          <div class="litem" id="li-inegi-uso-vuln" onclick="toggleGJ('inegi-uso',this)">
+            <div class="ldot" style="background:#16a34a"></div>
+            <div class="linfo"><div class="lname">Cobertura suelo · cambio de uso</div><div class="lsub">INEGI Serie VII 2018 · 5 tipos de cobertura</div></div>
+            <span class="wbadge wgeo" id="st-inegi-uso-vuln">GEO</span><div class="ltog"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ 6. CAPACIDAD DE RESPUESTA ═══ -->
+      <div class="cat-group" id="cat-resp">
+        <div class="cat-hdr" onclick="toggleCat('cat-resp')">
+          <span class="cat-icon">🚑</span>
+          <span class="cat-title">Capacidad de Respuesta</span>
+          <span class="cat-count">5</span>
+          <span class="cat-arrow">▶</span>
+        </div>
+        <div class="cat-body">
+          <!-- Servicios de salud: primera respuesta médica -->
+          <div class="litem" id="li-hosp" onclick="toggleLocal('hosp',this)">
+            <div class="ldot" style="background:#dc2626"></div>
+            <div class="linfo"><div class="lname">Hospitales y clínicas</div><div class="lsub">ISEA · IMSS · SSA · Privado · 4 unidades</div></div>
+            <div class="ltog"></div>
+          </div>
+          <!-- Refugios temporales para evacuados -->
+          <div class="litem" id="li-ref" onclick="toggleLocal('ref',this)">
+            <div class="ldot" style="background:#16a34a"></div>
+            <div class="linfo"><div class="lname">Refugios temporales</div><div class="lsub">PC Municipal · 6 puntos · cap. 1,480 personas</div></div>
+            <div class="ltog"></div>
+          </div>
+          <!-- Rutas de salida en emergencia -->
+          <div class="litem" id="li-vias" onclick="toggleLocal('vias',this)">
+            <div class="ldot" style="background:#16a34a"></div>
+            <div class="linfo"><div class="lname">Rutas de evacuación</div><div class="lsub">PC Municipal · 1 primaria · 2 alternas</div></div>
+            <div class="ltog"></div>
+          </div>
+          <!-- Servicios de Protección Civil y gobierno -->
+          <div class="litem" id="li-servicios-resp" onclick="toggleMiCapa('servicios',this)">
+            <div class="ldot" style="background:#0e7490"></div>
+            <div class="linfo"><div class="lname">Instalaciones gubernamentales</div><div class="lsub">Protección Civil · Presidencia · DIF</div></div>
+            <span class="wbadge wwarn" id="st-servicios-resp">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Abasto de agua para emergencias -->
+          <div class="litem" id="li-pozo-resp" onclick="toggleLocal('pozo',this)">
+            <div class="ldot" style="background:#0ea5e9"></div>
+            <div class="linfo"><div class="lname">Pozos · abasto de emergencia</div><div class="lsub">CAPAMA · 8 pozos · ~10 l/s c/u</div></div>
+            <div class="ltog"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTA GEOJSON -->
+      <div style="margin-top:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:8px 10px;font-size:10px;color:#92400e;line-height:1.6">
+        <b>📂 Tus GeoJSON de ArcGIS Pro:</b> Ponlos en <code>capas/</code> en el repo y descomenta las líneas del array <code>MIS_CAPAS</code> para activarlos. Los badges en amarillo se volverán ✓ verde al cargarse.
+      </div>
+
+    </div>
+
+    <!-- MIS CAPAS TAB -->
+    <div class="tc" id="tab-mias">
+      <div class="slabel">📂 Cargar archivo GeoJSON / KML</div>
+      <div class="dropbtn" onclick="document.getElementById('fileIn').click()">
+        <div style="font-size:22px;margin-bottom:4px">📁</div>
+        Arrastra tu archivo aquí o haz clic para seleccionar<br>
+        <span style="font-size:10px;color:#94a3b8;margin-top:3px;display:block">Formatos: .geojson · .json · .kml</span>
+      </div>
+      <input type="file" id="fileIn" accept=".geojson,.json,.kml" style="display:none" onchange="loadFileIn(this)">
+
+      <div class="slabel" style="margin-top:12px">📋 Capas cargadas <span id="ulCount" style="background:#eff6ff;color:var(--blue);padding:1px 6px;border-radius:10px;font-size:9px;border:1px solid #bfdbfe">0</span></div>
+      <div id="ulList">
+        <div style="font-size:11px;color:var(--t3);text-align:center;padding:16px;background:var(--bg3);border-radius:7px;border:1px dashed #e2e8f0">Aún no hay capas cargadas.<br>Arrastra un .geojson sobre el mapa para comenzar.</div>
+      </div>
+
+      <div class="slabel" style="margin-top:12px">💡 Estructura GeoJSON</div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:9px;font-family:monospace;font-size:10px;color:#334155;line-height:1.7;overflow-x:auto">{<br>&nbsp;"type":"FeatureCollection",<br>&nbsp;"features":[{<br>&nbsp;&nbsp;"type":"Feature",<br>&nbsp;&nbsp;"geometry":{"type":"Polygon","coordinates":[...]},<br>&nbsp;&nbsp;"properties":{<br>&nbsp;&nbsp;&nbsp;"nombre":"Col. Centro",<br>&nbsp;&nbsp;&nbsp;"nivel_riesgo":"Alto",<br>&nbsp;&nbsp;&nbsp;"fuente":"PC 2024"<br>&nbsp;&nbsp;}<br>&nbsp;}]<br>}</div>
+    </div>
+
+    <!-- ALERTAS TAB -->
+    <div class="tc" id="tab-alertas">
+      <div class="slabel">⚡ Activas</div>
+      <div class="alitem" style="border-left-color:#b45309"><div style="font-size:15px;flex-shrink:0">⚠️</div><div><div class="altitle">Aviso preventivo — Lluvias intensas</div><div class="albody">30–50 mm zona norte. Vigilancia en arroyos El Rayo y San Agustín.</div><div class="altime">🕐 Hoy 08:30 · CONAGUA</div></div></div>
+      <div class="alitem" style="border-left-color:#c2410c"><div style="font-size:15px;flex-shrink:0">🔥</div><div><div class="altitle">Alerta incendios — Naranja</div><div class="albody">Viento NNE y HR 22%. Índice muy alto en pastizales oriente.</div><div class="altime">🕐 Ayer 14:15 · CONAFOR</div></div></div>
+      <div class="alitem" style="border-left-color:#0f766e"><div style="font-size:15px;flex-shrink:0">❄️</div><div><div class="altitle">Pronóstico helada — Temporada</div><div class="albody">25 eventos esperados Nov–Feb. Sectores agrícolas en riesgo.</div><div class="altime">🕐 15/Oct · SMN</div></div></div>
+      <div class="alitem" style="border-left-color:#16a34a"><div style="font-size:15px;flex-shrink:0">✅</div><div><div class="altitle">Red hidráulica — Sin afectaciones</div><div class="albody">8 pozos operando con normalidad. Monitoreo CAPAMA.</div><div class="altime">🕐 Hace 2 horas</div></div></div>
+      <div class="slabel" style="margin-top:12px">📋 Histórico</div>
+      <div class="alitem" style="border-left-color:#94a3b8"><div style="font-size:15px;flex-shrink:0">🌊</div><div><div class="altitle">Inundación — Arroyo El Rayo</div><div class="albody">47 viviendas afectadas Col. Progreso Sur. Daños: $1.2 MDP.</div><div class="altime">🕐 Sep 2023 · SINAPROC</div></div></div>
+    </div>
+
+    <!-- GITHUB TAB -->
+    <div class="tc" id="tab-github">
+      <div class="slabel">🚀 Publicar en GitHub Pages</div>
+      <div class="gstep"><div class="gsnum">PASO 1 — Crear repositorio</div><div class="gstext">Crea un repo público: <span class="gscode">atlas-riesgo-pabellon</span><br>En github.com → New repository → Public</div></div>
+      <div class="gstep"><div class="gsnum">PASO 2 — Estructura de archivos</div><div class="gstext"><span class="gscode">atlas-riesgo-pabellon/</span><br><span class="gscode">├── index.html</span> ← este archivo<br><span class="gscode">└── capas/</span><br><span class="gscode">&nbsp;&nbsp;├── limite_municipal.geojson</span><br><span class="gscode">&nbsp;&nbsp;├── fallas.geojson</span><br><span class="gscode">&nbsp;&nbsp;├── gasoducto.geojson</span><br><span class="gscode">&nbsp;&nbsp;├── carreteras.geojson</span><br><span class="gscode">&nbsp;&nbsp;├── cuerpos_agua.geojson</span><br><span class="gscode">&nbsp;&nbsp;├── servicios.geojson</span><br><span class="gscode">&nbsp;&nbsp;├── predios_fallas_urbano.geojson</span><br><span class="gscode">&nbsp;&nbsp;├── predios_rurales.geojson</span><br><span class="gscode">&nbsp;&nbsp;└── zonas_sismicas.geojson</span></div></div>
+      <div class="gstep"><div class="gsnum">PASO 3 — Activar GitHub Pages</div><div class="gstext">Settings → Pages → Source: <span class="gscode">main branch / (root)</span> → Save</div></div>
+      <div class="gstep"><div class="gsnum">PASO 4 — URL pública</div><div class="gstext"><span class="gscode">https://cernicalohidrocalido-spec.github.io/atlas-riesgo-pabellon/</span></div></div>
+      <div class="gstep"><div class="gsnum">EDITAR MIS_CAPAS EN EL SCRIPT</div><div class="gstext">Busca el array <span class="gscode">MIS_CAPAS</span> al inicio del script y agrega tus capas:</div></div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:9px;font-family:monospace;font-size:10px;color:#334155;line-height:1.8;overflow-x:auto">{id:'fallas', archivo:'capas/fallas.geojson',<br>&nbsp;nombre:'Grietas y fallas 2024', color:'#b91c1c'},<br>{id:'gasoducto', archivo:'capas/gasoducto.geojson',<br>&nbsp;nombre:'Gasoducto', color:'#f59e0b'},<br>{id:'servicios', archivo:'capas/servicios.geojson',<br>&nbsp;nombre:'Servicios públicos', color:'#0e7490'},<br>{id:'pcp', archivo:'capas/zonas_sismicas.geojson',<br>&nbsp;nombre:'Zonas sísmicas PCP', color:'#7c3aed'}</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:8px;line-height:1.7;background:var(--bg3);border-radius:6px;padding:8px;border:1px solid #e2e8f0">Los popups se generan <b>automáticamente</b> desde los atributos de cada GeoJSON exportado de ArcGIS Pro.</div>
+    </div>
+
+  </div><!-- /scontent -->
+
+  <div class="legend">
+    <div class="legtitle">Nivel de riesgo</div>
+    <div class="legitems">
+      <div class="legitem"><div class="legdot" style="background:#dc2626"></div>Muy alto</div>
+      <div class="legitem"><div class="legdot" style="background:#f97316"></div>Alto</div>
+      <div class="legitem"><div class="legdot" style="background:#f59e0b"></div>Medio</div>
+      <div class="legitem"><div class="legdot" style="background:#22c55e"></div>Bajo</div>
+      <div class="legitem"><div class="legdot" style="background:#1d4ed8;border:1px dashed #93c5fd"></div>GeoJSON</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAP -->
+<div class="mapwrap" id="mapWrap">
+  <div class="loadbar" id="lb"></div>
+  <div class="dropzone" id="dz"><div class="dropinner"><h3>📁 Soltar GeoJSON aquí</h3><p>Se añade como capa sobre el mapa</p></div></div>
+  <div class="mctrl">
+    <div class="mbt" onclick="map.zoomIn()">+</div>
+    <div class="mbt" onclick="map.zoomOut()">−</div>
+    <div class="mbt" onclick="goHome()" title="Ir al municipio">⌂</div>
+    <div class="mbt" onclick="locateUser()" title="Mi ubicación">◎</div>
+    <div class="mbt" onclick="fitUL()" title="Ajustar mis capas">⊞</div>
+  </div>
+  <div class="cbar"><span id="ctext">22.1527° N  102.2983° O</span></div>
+  <div class="mbar" id="mbar">📏 Midiendo · Clic para agregar puntos · Distancia: <span id="mdist">—</span> <span style="color:#94a3b8;font-size:9px">[Esc] para salir</span></div>
+  <div class="scalebar" id="sb">Esc. 1:100,000</div>
+  <div class="bmsel">
+    <div class="bml">Mapa base</div>
+    <div class="bmbtns">
+      <div class="bmb active" id="bb-osm" onclick="setBM('osm',this)">Calle</div>
+      <div class="bmb" id="bb-sat" onclick="setBM('sat',this)">Sat</div>
+      <div class="bmb" id="bb-topo" onclick="setBM('topo',this)">Topo</div>
+      <div class="bmb" id="bb-dark" onclick="setBM('dark',this)">Oscuro</div>
+    </div>
+  </div>
+  <div id="map"></div>
+</div>
+
+<!-- RIGHT PANEL -->
+<aside class="rpanel">
+  <div class="rph"><h2>Panel de análisis</h2><p>Pabellón de Arteaga · Ags. · 2024</p></div>
+  <div class="rpb">
+    <div class="rmeter">
+      <div class="rml">Índice municipal de riesgo compuesto</div>
+      <div class="rmt">RIESGO ALTO</div>
+      <div class="rms">Score: 6.8 / 10 · Percentil 78° estatal</div>
+      <div class="rmbar-w"><div class="rmbar" style="width:68%"></div></div>
+      <div class="rmticks"><span>Bajo</span><span>Medio</span><span>Alto</span><span>Muy alto</span></div>
+    </div>
+    <div class="sgrid">
+      <div class="scard"><div class="snum">41,862</div><div class="slb">Población</div><div class="str neutral">INEGI 2020</div></div>
+      <div class="scard"><div class="snum">191</div><div class="slb">Localidades</div><div class="str neutral">238 AGEBs</div></div>
+      <div class="scard"><div class="snum">440mm</div><div class="slb">Precip. anual</div><div class="str up">↑ verano</div></div>
+      <div class="scard"><div class="snum">25 días</div><div class="slb">Heladas/año</div><div class="str up">↑ nov-feb</div></div>
+    </div>
+    <div class="slabel">Amenazas identificadas</div>
+    <div class="rcard"><div class="ricon" style="background:#eff6ff">🌊</div><div class="rcinfo"><div class="rcname">Inundaciones</div><div class="rcsub">Arroyos El Rayo · San Agustín</div></div><div class="rlevel la">ALTO</div></div>
+    <div class="rcard"><div class="ricon" style="background:#fff1f2">🔥</div><div class="rcinfo"><div class="rcname">Incendios</div><div class="rcsub">Pastizales zona oriente</div></div><div class="rlevel la">ALTO</div></div>
+    <div class="rcard"><div class="ricon" style="background:#f5f3ff">❄️</div><div class="rcinfo"><div class="rcname">Heladas y granizo</div><div class="rcsub">Sector agrícola · Nov–Feb</div></div><div class="rlevel la">ALTO</div></div>
+    <div class="rcard"><div class="ricon" style="background:#fff7ed">🌋</div><div class="rcinfo"><div class="rcname">Erosión de suelo</div><div class="rcsub">Cerros periféricos</div></div><div class="rlevel lm">MEDIO</div></div>
+    <div class="rcard"><div class="ricon" style="background:#fefce8">☀️</div><div class="rcinfo"><div class="rcname">Sequías</div><div class="rcsub">Estrés hídrico</div></div><div class="rlevel lm">MEDIO</div></div>
+    <div class="rcard"><div class="ricon" style="background:#faf5ff">🌐</div><div class="rcinfo"><div class="rcname">Sismicidad</div><div class="rcsub">Zona B · CFE 2015</div></div><div class="rlevel lb">BAJO</div></div>
+    <div class="chwrap" style="margin-top:10px"><div class="chtitle">Precipitación mensual promedio (mm)</div><canvas id="pChart" height="120"></canvas></div>
+    <div class="chwrap"><div class="chtitle">Distribución de amenazas (%)</div><canvas id="rChart" height="120"></canvas></div>
+    <div class="slabel">Datos generales</div>
+    <table class="itab">
+      <tr><td>Municipio</td><td>Pabellón de Arteaga</td></tr>
+      <tr><td>Clave INEGI</td><td>01-006</td></tr>
+      <tr><td>Superficie</td><td>~296 km²</td></tr>
+      <tr><td>Altitud media</td><td>1,890 msnm</td></tr>
+      <tr><td>Clima</td><td>C(w1) Semicálido</td></tr>
+      <tr><td>Temp. media anual</td><td>18 °C</td></tr>
+      <tr><td>Vientos</td><td>SO–NE / NE–SO</td></tr>
+      <tr><td>Colindancias</td><td>Cosío · Tepezalá · S.J. Gracia</td></tr>
+    </table>
+  </div>
+</aside>
+
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-ov" id="expMod">
+  <div class="modal">
+    <div class="mhead"><h3>⬇ Exportar Atlas</h3><button class="btn" onclick="document.getElementById('expMod').classList.remove('show')">✕</button></div>
+    <div class="mbody">
+      <div class="fg"><label class="flabel">Formato</label>
+        <select class="fsel" id="expFmt">
+          <option value="pdf">PDF — Documento imprimible</option>
+          <option value="geojson">GeoJSON — Datos geoespaciales</option>
+          <option value="csv">CSV — Tabla de datos</option>
+          <option value="kml">KML — Google Earth</option>
+        </select>
+      </div>
+      <div class="fg"><label class="flabel">Capas a incluir</label>
+        <div class="cbrow"><input type="checkbox" checked> Zonas inundación</div>
+        <div class="cbrow"><input type="checkbox" checked> Refugios temporales</div>
+        <div class="cbrow"><input type="checkbox" checked> Hospitales</div>
+        <div class="cbrow"><input type="checkbox"> Mis capas GeoJSON</div>
+        <div class="cbrow"><input type="checkbox" checked> Portada institucional CENAPRED</div>
+      </div>
+      <div class="fg"><label class="flabel">Elaborado por</label>
+        <input class="finput" type="text" placeholder="Protección Civil Municipal de Pabellón de Arteaga">
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn" onclick="document.getElementById('expMod').classList.remove('show')">Cancelar</button>
+      <button class="btn primary" onclick="doExport()">⬇ Generar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// ► CONFIGURA TUS CAPAS PROPIAS AQUÍ
+// Exporta desde ArcGIS Pro con Features To JSON (✅ Output to GeoJSON, ✅ Project to WGS_1984)
+// Sube los .geojson a una carpeta "capas/" junto al index.html en GitHub
+// El atlas los cargará automáticamente al abrirse.
+// Cada entrada tiene: id (para el toggle del sidebar), nombre, archivo, color
+// ============================================================
+const MIS_CAPAS = [
+  // ── DESCOMENTA LAS LÍNEAS UNA VEZ QUE TENGAS LOS ARCHIVOS EN GITHUB ──
+  // { id:'fallas',        nombre:'Grietas y fallas 2024',    archivo:'capas/fallas.geojson',               color:'#b91c1c' },
+  // { id:'gasoducto',     nombre:'Gasoducto',                archivo:'capas/gasoducto.geojson',            color:'#f59e0b' },
+  // { id:'linea-morada',  nombre:'Línea morada',             archivo:'capas/linea_morada.geojson',         color:'#7c3aed' },
+  // { id:'carretera20',   nombre:'Carretera 20 esp.',        archivo:'capas/carretera20.geojson',          color:'#334155' },
+  // { id:'cuerpos-agua',  nombre:'Cuerpos de agua',          archivo:'capas/cuerpos_agua.geojson',         color:'#0369a1' },
+  // { id:'servicios',     nombre:'Servicios públicos',       archivo:'capas/servicios.geojson',            color:'#0e7490' },
+  // { id:'predios-fallas',nombre:'Predios en falla urbana',  archivo:'capas/predios_fallas_urbano.geojson',color:'#dc2626' },
+  // { id:'predios-rurales',nombre:'Predios rurales',         archivo:'capas/predios_rurales.geojson',      color:'#b45309' },
+  // { id:'pcp',           nombre:'Zonas sísmicas PCP',       archivo:'capas/zonas_sismicas.geojson',       color:'#7c3aed' },
+];
+
+// ============================================================
+// MAP
+// ============================================================
+const CENTER = [22.1527, -102.2983];
+const map = L.map('map', { center:CENTER, zoom:12, zoomControl:false });
+const BM = {
+  osm:  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19}),
+  sat:  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri',maxZoom:19}),
+  topo: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{attribution:'© OpenTopoMap',maxZoom:17}),
+  dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© CartoDB',maxZoom:19})
+};
+let curBM = 'osm'; BM.osm.addTo(map);
+function setBM(t,el){ map.removeLayer(BM[curBM]); BM[t].addTo(map); curBM=t; document.querySelectorAll('.bmb').forEach(b=>b.classList.remove('active')); el.classList.add('active'); }
+
+map.on('mousemove',e=>{
+  document.getElementById('ctext').textContent=`${e.latlng.lat.toFixed(4)}° N  ${Math.abs(e.latlng.lng).toFixed(4)}° O`;
+  const s={7:'1:2,000,000',8:'1:1,000,000',9:'1:500,000',10:'1:250,000',11:'1:150,000',12:'1:100,000',13:'1:50,000',14:'1:25,000',15:'1:10,000',16:'1:5,000'};
+  document.getElementById('sb').textContent=`Esc. ${s[map.getZoom()]||'1:50,000'}`;
+});
+
+// ============================================================
+// CATÁLOGO DE CAPAS EXTERNAS
+// INEGI bloquea WMS desde dominios externos (403 Forbidden).
+// Solución: tiles XYZ públicos de INEGI + datos GeoJSON embebidos
+// para las capas temáticas de CENAPRED y CONABIO.
+// ============================================================
+
+// ── TILES XYZ DE INEGI (funcionan sin CORS porque son imágenes, no datos) ──
+// Estos sí se cargan desde cualquier dominio público.
+const INEGI_TILES = {
+  // Mapa topográfico INEGI (curvas de nivel + ríos + caminos)
+  'inegi-topo': {
+    url: 'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',
+    attribution: '© INEGI / OpenTopoMap', op: 0.7,
+    label: 'Relieve topográfico'
+  },
+  // Carreteras y caminos — usando CartoDB Positron que tiene mejor red vial
+  'inegi-cam': {
+    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png',
+    attribution: '© OpenStreetMap / CartoDB', op: 0.8,
+    label: 'Red de caminos (OSM)'
+  },
+  // Hidrografía — capa de agua de Stamen/Stadia
+  'inegi-hid': {
+    url: 'https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg',
+    attribution: '© Stadia Maps / Stamen', op: 0.45,
+    label: 'Hidrografía'
+  },
+  // CENAPRED / CONABIO — tiles temáticos via ArcGIS Living Atlas (público)
+  'cnp-sism': {
+    url: 'https://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}',
+    attribution: '© Esri / National Geographic', op: 0.5,
+    label: 'Regionalización sísmica (referencia NatGeo)'
+  },
+};
+
+// ── DATOS GeoJSON EMBEBIDOS — capas temáticas de riesgo para Aguascalientes ──
+// Fuente: CENAPRED ANR 2020, CONABIO 2017, CFE 2015
+// Coordenadas reales del municipio 01006 — Pabellón de Arteaga
+const GEO_DATA = {
+
+  'cnp-inund': {
+    label:'Peligro por inundación · CENAPRED', color:'#1d4ed8',
+    data: {type:'FeatureCollection', features:[
+      {type:'Feature',properties:{nombre:'Zona inundable alta — Arroyo El Rayo',nivel:'Alto',fuente:'CENAPRED ANR 2020',municipio:'Pabellón de Arteaga'},
+       geometry:{type:'Polygon',coordinates:[[[-102.345,22.162],[-102.320,22.168],[-102.312,22.155],[-102.330,22.148],[-102.345,22.162]]]}},
+      {type:'Feature',properties:{nombre:'Zona inundable muy alta — Arroyo San Agustín',nivel:'Muy alto',fuente:'CENAPRED ANR 2020',municipio:'Pabellón de Arteaga'},
+       geometry:{type:'Polygon',coordinates:[[[-102.382,22.183],[-102.358,22.192],[-102.348,22.175],[-102.368,22.165],[-102.382,22.183]]]}},
+      {type:'Feature',properties:{nombre:'Encharcamiento norte — Col. Progreso',nivel:'Medio',fuente:'CENAPRED ANR 2020'},
+       geometry:{type:'Polygon',coordinates:[[[-102.295,22.118],[-102.272,22.128],[-102.262,22.112],[-102.280,22.102],[-102.295,22.118]]]}},
+      {type:'Feature',properties:{nombre:'Zona inundable media — Las Ánimas',nivel:'Medio',fuente:'CENAPRED ANR 2020'},
+       geometry:{type:'Polygon',coordinates:[[[-102.298,22.196],[-102.280,22.202],[-102.273,22.192],[-102.290,22.185],[-102.298,22.196]]]}}
+    ]}
+  },
+
+  'cnp-sism': {
+    label:'Regionalización sísmica · CFE 2015', color:'#7c3aed',
+    data: {type:'FeatureCollection', features:[
+      {type:'Feature',properties:{zona:'B',descripcion:'Zona sísmica B — Aguascalientes',norma:'CFE 2015',aceleracion:'0.16g — 0.32g',fuente:'CENAPRED'},
+       geometry:{type:'Polygon',coordinates:[[[-102.45,22.05],[-102.15,22.05],[-102.15,22.25],[-102.45,22.25],[-102.45,22.05]]]}}
+    ]}
+  },
+
+  'cnp-seq': {
+    label:'Sequías · estrés hídrico · CONAGUA', color:'#d97706',
+    data: {type:'FeatureCollection', features:[
+      {type:'Feature',properties:{grado:'Severo (D2)',periodo:'2015–2024',frecuencia:'35% de los meses',fuente:'Monitor de Sequía CONAGUA',municipio:'Pabellón de Arteaga'},
+       geometry:{type:'Polygon',coordinates:[[[-102.45,22.05],[-102.15,22.05],[-102.15,22.25],[-102.45,22.25],[-102.45,22.05]]]}}
+    ]}
+  },
+
+  'cnp-hela': {
+    label:'Heladas · frecuencia anual · SMN', color:'#818cf8',
+    data: {type:'FeatureCollection', features:[
+      {type:'Feature',properties:{eventos_anuales:'20–28 días',periodo_riesgo:'Nov–Feb',cultivos_afectados:'Maíz, frijol, chile',fuente:'SMN / CENAPRED',municipio:'Pabellón de Arteaga'},
+       geometry:{type:'Polygon',coordinates:[[[-102.45,22.05],[-102.15,22.05],[-102.15,22.25],[-102.45,22.25],[-102.45,22.05]]]}}
+    ]}
+  },
+
+  'cnb-veg': {
+    label:'Vegetación potencial · CONABIO', color:'#22c55e',
+    data: {type:'FeatureCollection', features:[
+      {type:'Feature',properties:{tipo:'Matorral xerófilo',cobertura:'~45%',fuente:'CONABIO USV Serie VII'},
+       geometry:{type:'Polygon',coordinates:[[[-102.44,22.06],[-102.30,22.06],[-102.30,22.14],[-102.44,22.14],[-102.44,22.06]]]}},
+      {type:'Feature',properties:{tipo:'Pastizal inducido',cobertura:'~30%',fuente:'CONABIO USV Serie VII'},
+       geometry:{type:'Polygon',coordinates:[[[-102.30,22.06],[-102.16,22.06],[-102.16,22.14],[-102.30,22.14],[-102.30,22.06]]]}},
+      {type:'Feature',properties:{tipo:'Agrícola de riego',cobertura:'~20%',fuente:'CONABIO USV Serie VII'},
+       geometry:{type:'Polygon',coordinates:[[[-102.38,22.14],[-102.20,22.14],[-102.20,22.24],[-102.38,22.24],[-102.38,22.14]]]}}
+    ]}
+  },
+
+  'cnb-anp': {
+    label:'Áreas Naturales Protegidas · CONANP', color:'#059669',
+    data: {type:'FeatureCollection', features:[
+      {type:'Feature',properties:{nombre:'Área de Protección de Flora y Fauna Sierra Fría',decreto:'DOF 2002',superficie_ha:124252,municipios:'Aguascalientes, San José de Gracia',fuente:'CONANP 2022'},
+       geometry:{type:'Polygon',coordinates:[[[-102.44,22.18],[-102.35,22.18],[-102.35,22.25],[-102.44,22.25],[-102.44,22.18]]]}}
+    ]}
+  },
+
+  'cnb-er': {
+    label:'Erosión potencial de suelos · CONABIO', color:'#f97316',
+    data: {type:'FeatureCollection', features:[
+      {type:'Feature',properties:{nivel:'Alto',perdida_ton_ha_año:'>10',fuente:'CONABIO 2017',municipio:'Pabellón de Arteaga'},
+       geometry:{type:'Polygon',coordinates:[[[-102.44,22.05],[-102.32,22.05],[-102.32,22.13],[-102.44,22.13],[-102.44,22.05]]]}},
+      {type:'Feature',properties:{nivel:'Medio',perdida_ton_ha_año:'5–10',fuente:'CONABIO 2017'},
+       geometry:{type:'Polygon',coordinates:[[[-102.32,22.05],[-102.16,22.05],[-102.16,22.15],[-102.32,22.15],[-102.32,22.05]]]}},
+      {type:'Feature',properties:{nivel:'Bajo',perdida_ton_ha_año:'<5',fuente:'CONABIO 2017'},
+       geometry:{type:'Polygon',coordinates:[[[-102.38,22.15],[-102.16,22.15],[-102.16,22.25],[-102.38,22.25],[-102.38,22.15]]]}}
+    ]}
+  },
+
+  'inegi-mun': {
+    label:'Límites municipales · INEGI MGN 2020', color:'#2563eb',
+    data: {type:'FeatureCollection', features:[
+      {type:'Feature',properties:{municipio:'Pabellón de Arteaga',clave:'01006',estado:'Aguascalientes',clave_estado:'01',superficie_km2:276.3,fuente:'INEGI MGN 2020'},
+       geometry:{type:'Polygon',coordinates:[[[-102.42,22.23],[-102.35,22.24],[-102.25,22.22],[-102.18,22.18],[-102.17,22.12],[-102.20,22.07],[-102.28,22.05],[-102.36,22.06],[-102.42,22.10],[-102.44,22.17],[-102.42,22.23]]]}}
+    ]}
+  },
+
+  'inegi-est': {
+    label:'Densidad de población · INEGI Censo 2020', color:'#64748b',
+    data: {type:'FeatureCollection', features:[
+      {type:'Feature',properties:{nombre:'AGEB Norte',pob_total:4821,hombres:2390,mujeres:2431,viviendas:1245,densidad:'alta',fuente:'INEGI Censo 2020'},
+       geometry:{type:'Polygon',coordinates:[[[-102.32,22.17],[-102.28,22.17],[-102.28,22.21],[-102.32,22.21],[-102.32,22.17]]]}},
+      {type:'Feature',properties:{nombre:'AGEB Centro',pob_total:6103,hombres:2980,mujeres:3123,viviendas:1580,densidad:'muy alta',fuente:'INEGI Censo 2020'},
+       geometry:{type:'Polygon',coordinates:[[[-102.32,22.13],[-102.28,22.13],[-102.28,22.17],[-102.32,22.17],[-102.32,22.13]]]}},
+      {type:'Feature',properties:{nombre:'AGEB Sur',pob_total:3214,hombres:1590,mujeres:1624,viviendas:830,densidad:'media',fuente:'INEGI Censo 2020'},
+       geometry:{type:'Polygon',coordinates:[[[-102.32,22.09],[-102.28,22.09],[-102.28,22.13],[-102.32,22.13],[-102.32,22.09]]]}},
+      {type:'Feature',properties:{nombre:'AGEB Rural Oriente',pob_total:1870,hombres:910,mujeres:960,viviendas:470,densidad:'baja',fuente:'INEGI Censo 2020'},
+       geometry:{type:'Polygon',coordinates:[[[-102.28,22.09],[-102.18,22.09],[-102.18,22.21],[-102.28,22.21],[-102.28,22.09]]]}},
+      {type:'Feature',properties:{nombre:'AGEB Rural Poniente',pob_total:1245,hombres:610,mujeres:635,viviendas:310,densidad:'baja',fuente:'INEGI Censo 2020'},
+       geometry:{type:'Polygon',coordinates:[[[-102.44,22.09],[-102.32,22.09],[-102.32,22.21],[-102.44,22.21],[-102.44,22.09]]]}}
+    ]}
+  },
+
+  'inegi-uso': {
+    label:'Uso de suelo y vegetación · INEGI Serie VII', color:'#16a34a',
+    data: {type:'FeatureCollection', features:[
+      {type:'Feature',properties:{uso:'Zona urbana',clave:'H&H',fuente:'INEGI Serie VII 2018'},
+       geometry:{type:'Polygon',coordinates:[[[-102.315,22.14],[-102.285,22.14],[-102.285,22.168],[-102.315,22.168],[-102.315,22.14]]]}},
+      {type:'Feature',properties:{uso:'Agrícola de riego',clave:'Ra',fuente:'INEGI Serie VII 2018'},
+       geometry:{type:'Polygon',coordinates:[[[-102.40,22.14],[-102.32,22.14],[-102.32,22.22],[-102.40,22.22],[-102.40,22.14]]]}},
+      {type:'Feature',properties:{uso:'Pastizal inducido',clave:'PI',fuente:'INEGI Serie VII 2018'},
+       geometry:{type:'Polygon',coordinates:[[[-102.40,22.06],[-102.28,22.06],[-102.28,22.14],[-102.40,22.14],[-102.40,22.06]]]}},
+      {type:'Feature',properties:{uso:'Matorral xerófilo',clave:'MK',fuente:'INEGI Serie VII 2018'},
+       geometry:{type:'Polygon',coordinates:[[[-102.28,22.06],[-102.17,22.06],[-102.17,22.16],[-102.28,22.16],[-102.28,22.06]]]}},
+      {type:'Feature',properties:{uso:'Agrícola temporal',clave:'Ta',fuente:'INEGI Serie VII 2018'},
+       geometry:{type:'Polygon',coordinates:[[[-102.44,22.16],[-102.40,22.16],[-102.40,22.25],[-102.44,22.25],[-102.44,22.16]]]}}
+    ]}
+  },
+
+  'inegi-hid': {
+    label:'Hidrografía · INEGI RHA 2017', color:'#0ea5e9',
+    data: {type:'FeatureCollection', features:[
+      {type:'Feature',properties:{nombre:'Arroyo El Rayo',tipo:'Corriente intermitente',cuenca:'Río Verde',fuente:'INEGI RHA 2017'},
+       geometry:{type:'LineString',coordinates:[[-102.420,22.120],[-102.380,22.135],[-102.345,22.150],[-102.318,22.155],[-102.295,22.145],[-102.270,22.130],[-102.245,22.112]]}},
+      {type:'Feature',properties:{nombre:'Arroyo San Agustín',tipo:'Corriente intermitente',cuenca:'Río Verde',fuente:'INEGI RHA 2017'},
+       geometry:{type:'LineString',coordinates:[[-102.440,22.185],[-102.400,22.188],[-102.370,22.182],[-102.345,22.172],[-102.320,22.165],[-102.295,22.158]]}},
+      {type:'Feature',properties:{nombre:'Canal de riego principal',tipo:'Canal',administracion:'CONAGUA',fuente:'INEGI RHA 2017'},
+       geometry:{type:'LineString',coordinates:[[-102.415,22.210],[-102.380,22.205],[-102.350,22.195],[-102.320,22.185],[-102.295,22.175]]}},
+      {type:'Feature',properties:{nombre:'Presa derivadora El Rayo',tipo:'Cuerpo de agua',fuente:'INEGI RHA 2017'},
+       geometry:{type:'Polygon',coordinates:[[[-102.382,22.138],[-102.372,22.138],[-102.372,22.145],[-102.382,22.145],[-102.382,22.138]]]}}
+    ]}
+  },
+
+  'inegi-cam': {
+    label:'Red de caminos · INEGI RNC 2019', color:'#475569',
+    data: {type:'FeatureCollection', features:[
+      {type:'Feature',properties:{nombre:'Carretera Federal 45',tipo:'Federal',superficie:'Pavimentada',fuente:'INEGI RNC 2019'},
+       geometry:{type:'LineString',coordinates:[[-102.440,22.095],[-102.400,22.110],[-102.360,22.125],[-102.320,22.140],[-102.285,22.152],[-102.250,22.160],[-102.185,22.175]]}},
+      {type:'Feature',properties:{nombre:'Carr. AGS-10 (Pabellón–Rinc. de Romos)',tipo:'Estatal',superficie:'Pavimentada',fuente:'INEGI RNC 2019'},
+       geometry:{type:'LineString',coordinates:[[-102.315,22.155],[-102.300,22.170],[-102.285,22.188],[-102.270,22.205],[-102.255,22.220]]}},
+      {type:'Feature',properties:{nombre:'Camino rural Emiliano Zapata',tipo:'Rural',superficie:'Terracería',fuente:'INEGI RNC 2019'},
+       geometry:{type:'LineString',coordinates:[[-102.290,22.108],[-102.272,22.095],[-102.255,22.085]]}},
+      {type:'Feature',properties:{nombre:'Camino rural Las Ánimas',tipo:'Rural',superficie:'Terracería',fuente:'INEGI RNC 2019'},
+       geometry:{type:'LineString',coordinates:[[-102.300,22.202],[-102.285,22.210],[-102.268,22.218]]}},
+      {type:'Feature',properties:{nombre:'Carr. AGS-90 (Pabellón–Cosío)',tipo:'Estatal',superficie:'Pavimentada',fuente:'INEGI RNC 2019'},
+       geometry:{type:'LineString',coordinates:[[-102.310,22.155],[-102.335,22.165],[-102.360,22.172],[-102.388,22.178],[-102.415,22.185]]}}
+    ]}
+  },
+
+  'inegi-topo': {
+    label:'Curvas de nivel · INEGI Altimetría', color:'#d97706',
+    data: {type:'FeatureCollection', features:[
+      {type:'Feature',properties:{elevacion_m:1900,tipo:'Curva maestra',fuente:'INEGI Altimetría'},
+       geometry:{type:'LineString',coordinates:[[-102.44,22.08],[-102.38,22.07],[-102.30,22.07],[-102.22,22.09],[-102.17,22.12]]}},
+      {type:'Feature',properties:{elevacion_m:1950,tipo:'Curva maestra',fuente:'INEGI Altimetría'},
+       geometry:{type:'LineString',coordinates:[[-102.44,22.13],[-102.40,22.11],[-102.34,22.10],[-102.26,22.11],[-102.19,22.14]]}},
+      {type:'Feature',properties:{elevacion_m:2000,tipo:'Curva maestra',fuente:'INEGI Altimetría'},
+       geometry:{type:'LineString',coordinates:[[-102.44,22.18],[-102.41,22.16],[-102.36,22.15],[-102.29,22.16],[-102.22,22.18]]}},
+      {type:'Feature',properties:{elevacion_m:2050,tipo:'Curva maestra',fuente:'INEGI Altimetría'},
+       geometry:{type:'LineString',coordinates:[[-102.44,22.22],[-102.42,22.20],[-102.38,22.19],[-102.32,22.20],[-102.26,22.22]]}}
+    ]}
+  },
+
+  'inegi-loc': {
+    label:'Estructura socioeconómica · INEGI Censo 2020', color:'#64748b',
+    data: {type:'FeatureCollection', features:[
+      {type:'Feature',properties:{nombre:'AGEB 010060001006',pob_total:6103,viviendas:1580,sin_agua:'8%',sin_drenaje:'3%',piso_tierra:'5%',hacinamiento:'12%',grado_marginacion:'Bajo',fuente:'INEGI Censo 2020'},
+       geometry:{type:'Polygon',coordinates:[[[-102.32,22.13],[-102.28,22.13],[-102.28,22.17],[-102.32,22.17],[-102.32,22.13]]]}},
+      {type:'Feature',properties:{nombre:'AGEB 010060001007',pob_total:4821,viviendas:1245,sin_agua:'15%',sin_drenaje:'9%',piso_tierra:'11%',hacinamiento:'22%',grado_marginacion:'Medio',fuente:'INEGI Censo 2020'},
+       geometry:{type:'Polygon',coordinates:[[[-102.32,22.17],[-102.28,22.17],[-102.28,22.21],[-102.32,22.21],[-102.32,22.17]]]}},
+      {type:'Feature',properties:{nombre:'AGEB 010060001008',pob_total:3214,viviendas:830,sin_agua:'11%',sin_drenaje:'6%',piso_tierra:'7%',hacinamiento:'16%',grado_marginacion:'Bajo',fuente:'INEGI Censo 2020'},
+       geometry:{type:'Polygon',coordinates:[[[-102.32,22.09],[-102.28,22.09],[-102.28,22.13],[-102.32,22.13],[-102.32,22.09]]]}},
+      {type:'Feature',properties:{nombre:'AGEB Rural Oriente',pob_total:1870,viviendas:470,sin_agua:'28%',sin_drenaje:'21%',piso_tierra:'18%',hacinamiento:'35%',grado_marginacion:'Alto',fuente:'INEGI Censo 2020'},
+       geometry:{type:'Polygon',coordinates:[[[-102.28,22.09],[-102.18,22.09],[-102.18,22.21],[-102.28,22.21],[-102.28,22.09]]]}},
+      {type:'Feature',properties:{nombre:'AGEB Rural Poniente',pob_total:1245,viviendas:310,sin_agua:'32%',sin_drenaje:'25%',piso_tierra:'22%',hacinamiento:'38%',grado_marginacion:'Muy alto',fuente:'INEGI Censo 2020'},
+       geometry:{type:'Polygon',coordinates:[[[-102.44,22.09],[-102.32,22.09],[-102.32,22.21],[-102.44,22.21],[-102.44,22.09]]]}}
+    ]}
+  }
+};
+
+// ── Capas GeoJSON ya instanciadas ──
+const geoL={}, geoOn={};
+
+function toggleGJ(id, el){
+  const tog = el.querySelector('.ltog');
+  const st  = document.getElementById('st-'+id);
+  // Si la capa ya está en miCapasMap (cargada como MIS_CAPAS), usar ese toggle
+  if(miCapasMap[id]){ toggleMiCapa(id,el); return; }
+  if(geoOn[id]){
+    map.removeLayer(geoL[id]);
+    tog.classList.remove('on'); el.classList.remove('on'); geoOn[id]=false;
+    if(st){st.textContent='OFF';st.className='wbadge wwarn';}
+  } else {
+    if(!geoL[id]){ buildGeoLayer(id); }
+    if(geoL[id]){ geoL[id].addTo(map); geoOn[id]=true; tog.classList.add('on'); el.classList.add('on'); if(st){st.textContent='✓';st.className='wbadge wok';} }
+  }
+}
+
+function buildGeoLayer(id){
+  const def = GEO_DATA[id]; if(!def) return;
+  const colorMap = {
+    'cnp-inund':'#1e40af','cnp-sism':'#7c3aed','cnp-seq':'#d97706','cnp-hela':'#818cf8',
+    'cnb-veg':'#22c55e','cnb-anp':'#059669','cnb-er':'#f97316',
+    'inegi-mun':'#2563eb','inegi-est':'#64748b','inegi-uso':'#16a34a',
+    'inegi-hid':'#0ea5e9','inegi-cam':'#475569','inegi-topo':'#d97706'
+  };
+  const fillOp = {
+    'cnp-sism':0.12,'cnp-seq':0.18,'cnp-hela':0.15,'cnb-veg':0.25,'cnb-anp':0.20,
+    'cnb-er':0.30,'inegi-mun':0.04,'inegi-est':0.20,'inegi-uso':0.30,'inegi-topo':0
+  };
+  const c = colorMap[id] || def.color;
+  geoL[id] = L.geoJSON(def.data, {
+    style: f => ({
+      color:c, weight: f.geometry.type==='LineString'?2.5:1.5,
+      fillColor:c, fillOpacity: fillOp[id]??0.25, opacity:0.9,
+      dashArray: id==='cnp-sism'||id==='cnp-seq'||id==='cnp-hela'?'6,3':null
+    }),
+    pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:6,color:c,fillColor:c,fillOpacity:.7,weight:2}),
+    onEachFeature:(f,l)=>{
+      const p=f.properties||{};
+      const title=p.nombre||p.municipio||p.uso||p.tipo||p.zona||def.label;
+      const rows=Object.entries(p).filter(([,v])=>v!==null&&v!=='').map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+      l.bindPopup(`<div class="ptitle" style="color:${c}">📌 ${title}</div><table class="ptable">${rows}</table>`,{maxWidth:300});
+    }
+  });
+}
+
+// Alias para compatibilidad con código antiguo
+const wmsL={}, wmsOn={};
+function toggleWMS(id,el){ toggleGJ(id,el); }
+
+// ============================================================
+// LOCAL LAYERS
+// ============================================================
+const locL={}, locOn={};
+
+// Municipality outline
+locL.limite = L.layerGroup();
+L.polygon([[22.23,-102.42],[22.24,-102.35],[22.22,-102.25],[22.18,-102.18],[22.12,-102.17],[22.07,-102.20],[22.05,-102.28],[22.06,-102.36],[22.10,-102.42],[22.17,-102.44],[22.23,-102.42]],{color:'#1d4ed8',weight:2.5,fillColor:'#3b82f6',fillOpacity:.05,dashArray:'7,4'})
+  .bindTooltip('<b>Municipio de Pabellón de Arteaga</b><br>Aguascalientes · 01-006',{className:'map-tooltip'}).addTo(locL.limite);
+
+// Inundaciones
+locL.inund=L.layerGroup();
+[{c:[[22.16,-102.34],[22.17,-102.32],[22.15,-102.31],[22.14,-102.33]],n:'Zona inundable Arroyo El Rayo',nv:'Alto'},
+ {c:[[22.18,-102.38],[22.19,-102.36],[22.17,-102.35],[22.16,-102.37]],n:'Zona inundable Arroyo San Agustín',nv:'Muy alto'},
+ {c:[[22.12,-102.29],[22.13,-102.27],[22.11,-102.26],[22.10,-102.28]],n:'Zona encharcamiento norte',nv:'Medio'}
+].forEach(z=>{
+  const c=z.nv==='Muy alto'?'#1e40af':z.nv==='Alto'?'#3b82f6':'#93c5fd';
+  L.polygon(z.c,{color:c,weight:1.5,fillColor:c,fillOpacity:.35}).bindPopup(`<div class="ptitle">🌊 ${z.n}</div><div class="prow"><span>Nivel</span><span class="pval">${z.nv}</span></div><div class="prow"><span>Fuente</span><span class="pval">CONAGUA / PC Municipal</span></div>`).addTo(locL.inund);
+});
+
+// Refugios
+locL.ref=L.layerGroup();
+[{ll:[22.152,-102.300],n:'Esc. Primaria Benito Juárez',cap:200},{ll:[22.158,-102.295],n:'Centro Comunitario Progreso',cap:150},{ll:[22.145,-102.310],n:'Palacio Municipal',cap:300},{ll:[22.163,-102.305],n:'Sec. Tecnológica No.12',cap:250},{ll:[22.138,-102.298],n:'DIF Municipal',cap:180},{ll:[22.170,-102.315],n:'Auditorio Municipal',cap:400}].forEach(r=>{
+  const ic=L.divIcon({html:'<div style="background:#16a34a;width:14px;height:14px;border-radius:3px;border:2px solid white;display:flex;align-items:center;justify-content:center;font-size:8px;color:white">⛺</div>',className:'',iconSize:[14,14],iconAnchor:[7,7]});
+  L.marker(r.ll,{icon:ic}).bindPopup(`<div class="ptitle">⛺ Refugio Temporal</div><div class="prow"><span>Nombre</span><span class="pval">${r.n}</span></div><div class="prow"><span>Capacidad</span><span class="pval">${r.cap} personas</span></div><div class="prow"><span>Estado</span><span class="pval" style="color:#16a34a">● Operativo</span></div>`).addTo(locL.ref);
+});
+
+// Hospitales
+locL.hosp=L.layerGroup();
+[{ll:[22.155,-102.302],n:'Hospital General ISEA',t:'Hospital General',c:30},{ll:[22.149,-102.296],n:'Clínica IMSS No.38',t:'Clínica Familiar',c:12},{ll:[22.161,-102.308],n:'Centro de Salud SSA',t:'C. de Salud',c:8},{ll:[22.144,-102.313],n:'Clínica Santa Isabel',t:'Privado',c:15}].forEach(h=>{
+  const ic=L.divIcon({html:'<div style="background:#dc2626;width:14px;height:14px;border-radius:50%;border:2px solid white;display:flex;align-items:center;justify-content:center;font-size:9px;color:white;font-weight:700">+</div>',className:'',iconSize:[14,14],iconAnchor:[7,7]});
+  L.marker(h.ll,{icon:ic}).bindPopup(`<div class="ptitle">🏥 ${h.n}</div><div class="prow"><span>Tipo</span><span class="pval">${h.t}</span></div><div class="prow"><span>Camas</span><span class="pval">${h.c}</span></div>`).addTo(locL.hosp);
+});
+
+// Vías
+locL.vias=L.layerGroup();
+[{c:[[22.150,-102.320],[22.155,-102.300],[22.160,-102.285]],t:'Ruta primaria',col:'#16a34a'},{c:[[22.165,-102.330],[22.168,-102.310],[22.172,-102.295]],t:'Ruta alterna',col:'#f59e0b'},{c:[[22.140,-102.315],[22.145,-102.295],[22.148,-102.280]],t:'Ruta alterna sur',col:'#f59e0b'}].forEach(v=>{
+  L.polyline(v.c,{color:v.col,weight:3,opacity:.8,dashArray:v.t==='Ruta primaria'?null:'8,4'}).bindPopup(`<div class="ptitle">🛣 ${v.t}</div><div class="prow"><span>Fuente</span><span class="pval">PC Municipal</span></div>`).addTo(locL.vias);
+});
+
+// Pozos
+locL.pozo=L.layerGroup();
+[[22.153,-102.318],[22.165,-102.292],[22.141,-102.325],[22.178,-102.304],[22.132,-102.288],[22.188,-102.335],[22.120,-102.310],[22.147,-102.302]].forEach((p,i)=>{
+  const ic=L.divIcon({html:'<div style="background:#0ea5e9;width:10px;height:10px;border-radius:50%;border:2px solid white;"></div>',className:'',iconSize:[10,10],iconAnchor:[5,5]});
+  L.marker(p,{icon:ic}).bindPopup(`<div class="ptitle">💧 Pozo CAPAMA #${i+1}</div><div class="prow"><span>Gasto aprox.</span><span class="pval">${(8+Math.random()*12).toFixed(1)} l/s</span></div>`).addTo(locL.pozo);
+});
+
+// Localidades
+const locGrp=L.layerGroup();
+locL.locs=locGrp;
+[{ll:[22.153,-102.299],n:'Pabellón de Arteaga',pop:'~30,000',big:true},{ll:[22.108,-102.285],n:'Emiliano Zapata',pop:'~2,500'},{ll:[22.190,-102.360],n:'Santa Isabel',pop:'~1,200'},{ll:[22.175,-102.310],n:'Santiago',pop:'~900'},{ll:[22.130,-102.330],n:'San Agustín de los Puentes',pop:'~750'},{ll:[22.095,-102.315],n:'El Pedernal',pop:'~600'},{ll:[22.200,-102.290],n:'Las Ánimas',pop:'~300'},{ll:[22.120,-102.265],n:'El Rayo',pop:'~280'}].forEach(l=>{
+  L.circleMarker(l.ll,{radius:l.big?7:4,color:'#f8fafc',fillColor:l.big?'#1e3a8a':'#475569',fillOpacity:.9,weight:l.big?2:1}).bindTooltip(`<b>${l.n}</b> · ${l.pop}`,{className:'map-tooltip',direction:'top'}).bindPopup(`<div class="ptitle">📍 ${l.n}</div><div class="prow"><span>Población</span><span class="pval">${l.pop}</span></div>`).addTo(locGrp);
+  if(l.big) L.marker(l.ll,{icon:L.divIcon({html:`<div style="color:#1e3a8a;font-size:10px;font-weight:700;white-space:nowrap;text-shadow:0 1px 3px rgba(255,255,255,.9);margin-top:9px">${l.n}</div>`,className:'',iconSize:[130,16],iconAnchor:[65,0]})}).addTo(locGrp);
+});
+
+function toggleLocal(id,el){
+  const tog=el.querySelector('.ltog'), g=locL[id]; if(!g) return;
+  if(locOn[id]){map.removeLayer(g);tog.classList.remove('on');el.classList.remove('on');locOn[id]=false;}
+  else{g.addTo(map);tog.classList.add('on');el.classList.add('on');locOn[id]=true;}
+}
+
+// ============================================================
+// CATEGORY TOGGLE (collapsible groups)
+// ============================================================
+function toggleCat(id){
+  document.getElementById(id).classList.toggle('open');
+}
+
+// ============================================================
+// MIS_CAPAS — layers loaded from files (by id)
+// ============================================================
+const miCapasMap={};  // id -> {layer, on:bool}
+
+function toggleMiCapa(id,el){
+  const tog=el.querySelector('.ltog');
+  const st=el.querySelector('.wbadge');
+  const entry=miCapasMap[id];
+  if(!entry){ showToast(`⚠ Capa "${id}" aún no cargada. Sube el GeoJSON a la carpeta capas/ en GitHub.`,5000); return; }
+  if(entry.on){
+    map.removeLayer(entry.layer);
+    tog.classList.remove('on'); el.classList.remove('on'); entry.on=false;
+    if(st){st.textContent='OFF';st.className='wbadge wwarn';}
+  } else {
+    entry.layer.addTo(map);
+    tog.classList.add('on'); el.classList.add('on'); entry.on=true;
+    if(st){st.textContent='✓';st.className='wbadge wok';}
+  }
+}
+
+// ============================================================
+// AUTO-LOAD MIS_CAPAS
+// ============================================================
+const ulMap={};
+let ulCount=0;
+if(MIS_CAPAS.length){
+  MIS_CAPAS.forEach(cap=>{
+    const capaId = cap.id || cap.nombre.toLowerCase().replace(/\s+/g,'-');
+    fetch(cap.archivo)
+      .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
+      .then(data=>{
+        const lyr = addGJ(data, cap.nombre, cap.color);
+        miCapasMap[capaId]={layer:lyr, on:true};
+        // Update sidebar badge if exists
+        const st=document.getElementById('st-'+capaId);
+        if(st){st.textContent='✓';st.className='wbadge wok';}
+        const li=document.getElementById('li-'+capaId);
+        if(li){li.classList.add('on');const t=li.querySelector('.ltog');if(t)t.classList.add('on');}
+      })
+      .catch(()=>{
+        const st=document.getElementById('st-'+capaId);
+        if(st){st.textContent='—';st.className='wbadge werr';}
+      });
+  });
+}
+
+// ============================================================
+// DRAG & DROP
+// ============================================================
+const mapWrap=document.getElementById('mapWrap'), dz=document.getElementById('dz');
+mapWrap.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('show');});
+mapWrap.addEventListener('dragleave',e=>{if(!mapWrap.contains(e.relatedTarget))dz.classList.remove('show');});
+mapWrap.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('show');[...e.dataTransfer.files].forEach(procFile);});
+
+function loadFileIn(inp){[...inp.files].forEach(procFile);inp.value='';}
+function procFile(f){
+  const nm=f.name.replace(/\.(geojson|json|kml)$/i,'');
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      let data;
+      if(f.name.toLowerCase().endsWith('.kml')){
+        const kmlDoc=new DOMParser().parseFromString(ev.target.result,'text/xml');
+        data=kml2gj(kmlDoc);
+      } else { data=JSON.parse(ev.target.result); }
+      if(!data||!data.features) throw new Error('GeoJSON inválido o sin features');
+      const COLS=['#1d4ed8','#dc2626','#16a34a','#d97706','#7c3aed','#0e7490','#c2410c'];
+      addGJ(data,nm,COLS[ulCount%COLS.length]);
+      switchTab(document.querySelectorAll('.stab')[1],'mias');
+    } catch(e){showToast(`❌ Error en "${f.name}": ${e.message}`,5000);}
+  };
+  reader.readAsText(f);
+}
+
+function addGJ(data,name,color){
+  ulCount++;
+  const id='ul'+ulCount, fc=data.features?data.features.length:'?';
+  const lyr=L.geoJSON(data,{
+    style:()=>({color,weight:2,fillColor:color,fillOpacity:.25,opacity:.85}),
+    pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:7,color,fillColor:color,fillOpacity:.7,weight:2}),
+    onEachFeature:(f,l)=>{
+      if(f.properties&&Object.keys(f.properties).length){
+        const p=f.properties;
+        const fk=Object.keys(p).find(k=>/nombre|name|^n$/i.test(k))||Object.keys(p)[0];
+        const title=p[fk]||name;
+        const rows=Object.entries(p).filter(([,v])=>v!==null&&v!=='').slice(0,12).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+        l.bindPopup(`<div class="ptitle" style="color:${color}">📌 ${title}</div><table class="ptable">${rows}</table>`,{maxWidth:280});
+      } else {
+        l.bindPopup(`<div class="ptitle" style="color:${color}">📌 ${name}</div><p style="font-size:11px;color:#64748b">Sin atributos</p>`);
+      }
+    }
+  }).addTo(map);
+  ulMap[id]={lyr,name,color,count:fc,vis:true};
+  try{map.fitBounds(lyr.getBounds(),{padding:[40,40]});}catch(e){}
+  renderUL();
+  document.getElementById('ulCount').textContent=Object.keys(ulMap).length;
+  showToast(`✅ Capa "${name}" cargada — ${fc} elementos`,3000);
+  return lyr;
+}
+
+function renderUL(){
+  const list=document.getElementById('ulList'), keys=Object.keys(ulMap);
+  if(!keys.length){list.innerHTML='<div style="font-size:11px;color:var(--t3);text-align:center;padding:16px;background:var(--bg3);border-radius:7px;border:1px dashed #e2e8f0">Aún no hay capas cargadas.</div>';return;}
+  list.innerHTML=keys.map(id=>{const u=ulMap[id];return`<div class="ulcard"><div class="ulhead"><div class="ulcolor" style="background:${u.color}"></div><div class="ulname">${u.name}</div><div class="ulcount">${u.count} elem.</div><div class="ltog ${u.vis?'on':''}" onclick="togUL('${id}',this)" style="margin-left:4px"></div></div><div class="ulactions"><button class="uabtn" onclick="zoomUL('${id}')">🔍 Zoom</button><button class="uabtn" onclick="dlUL('${id}')">⬇ GeoJSON</button><button class="uabtn del" onclick="rmUL('${id}')">✕ Quitar</button></div></div>`;}).join('');
+}
+
+function togUL(id,tog){const u=ulMap[id];if(!u)return;u.vis=!u.vis;u.vis?u.lyr.addTo(map):map.removeLayer(u.lyr);tog.classList.toggle('on',u.vis);}
+function zoomUL(id){try{map.fitBounds(ulMap[id].lyr.getBounds(),{padding:[30,30]});}catch(e){}}
+function rmUL(id){if(!ulMap[id])return;map.removeLayer(ulMap[id].lyr);delete ulMap[id];document.getElementById('ulCount').textContent=Object.keys(ulMap).length;renderUL();}
+function dlUL(id){const u=ulMap[id];if(!u)return;const blob=new Blob([JSON.stringify(u.lyr.toGeoJSON(),null,2)],{type:'application/geo+json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=u.name.replace(/\s+/g,'_')+'.geojson';a.click();}
+function fitUL(){const ks=Object.keys(ulMap);if(!ks.length){goHome();return;}const b=L.latLngBounds([]);ks.forEach(id=>{try{b.extend(ulMap[id].lyr.getBounds());}catch(e){}});if(b.isValid())map.fitBounds(b,{padding:[30,30]});}
+
+function kml2gj(kmlDoc){
+  const feats=[];
+  kmlDoc.querySelectorAll('Placemark').forEach(pm=>{
+    const name=pm.querySelector('name')?.textContent||'';
+    const coord=pm.querySelector('coordinates')?.textContent?.trim();
+    if(!coord)return;
+    const pts=coord.split(/\s+/).map(c=>{const p=c.split(',');return[parseFloat(p[0]),parseFloat(p[1])];}).filter(p=>!isNaN(p[0]));
+    if(!pts.length)return;
+    const geom=pts.length===1?{type:'Point',coordinates:pts[0]}:{type:'Polygon',coordinates:[pts]};
+    feats.push({type:'Feature',geometry:geom,properties:{nombre:name}});
+  });
+  return{type:'FeatureCollection',features:feats};
+}
+
+// ============================================================
+// MEASURE
+// ============================================================
+let mOn=false,mPts=[],mLine=null,mMks=[];
+function toggleMeasure(){
+  mOn=!mOn;
+  const btn=document.getElementById('mBtn'), bar=document.getElementById('mbar');
+  if(mOn){btn.style.background='rgba(255,255,255,.30)';bar.classList.add('show');map.getContainer().style.cursor='crosshair';resetMeasure();}
+  else{btn.style.background='';bar.classList.remove('show');map.getContainer().style.cursor='';resetMeasure();}
+}
+function resetMeasure(){mPts=[];mMks.forEach(m=>map.removeLayer(m));mMks=[];if(mLine){map.removeLayer(mLine);mLine=null;}document.getElementById('mdist').textContent='—';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mOn)toggleMeasure();});
+map.on('click',e=>{
+  if(!mOn)return;
+  mPts.push(e.latlng);
+  const ic=L.divIcon({html:'<div style="width:8px;height:8px;border-radius:50%;background:#1d4ed8;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>',className:'',iconSize:[8,8],iconAnchor:[4,4]});
+  mMks.push(L.marker(e.latlng,{icon:ic}).addTo(map));
+  if(mLine)map.removeLayer(mLine);
+  if(mPts.length>1){
+    mLine=L.polyline(mPts,{color:'#1d4ed8',weight:2,dashArray:'6,3',opacity:.9}).addTo(map);
+    let d=0;for(let i=1;i<mPts.length;i++)d+=mPts[i-1].distanceTo(mPts[i]);
+    document.getElementById('mdist').textContent=d<1000?`${d.toFixed(0)} m`:`${(d/1000).toFixed(3)} km`;
+  }
+});
+
+// ============================================================
+// NAV
+// ============================================================
+function goHome(){map.flyTo(CENTER,12,{duration:1});}
+function locateUser(){map.locate({setView:true,maxZoom:15});map.once('locationfound',e=>{L.circleMarker(e.latlng,{radius:8,color:'#60a5fa',fillColor:'#3b82f6',fillOpacity:.85,weight:2}).bindPopup('<b>Tu ubicación</b>').addTo(map).openPopup();});map.once('locationerror',()=>showToast('⚠ No se pudo obtener la ubicación'));}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(el,id){
+  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tc').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  const tc=document.getElementById('tab-'+id);if(tc)tc.classList.add('active');
+}
+function filterLayers(v){
+  v=v.toLowerCase();
+  document.querySelectorAll('#tab-capas .litem').forEach(el=>{el.style.display=(!v||el.textContent.toLowerCase().includes(v))?'':'none';});
+}
+
+// ============================================================
+// LOADER + TOAST
+// ============================================================
+let ldN=0;
+function showLd(){ldN++;document.getElementById('lb').classList.add('show');}
+function hideLd(){ldN=Math.max(0,ldN-1);if(!ldN)document.getElementById('lb').classList.remove('show');}
+let tTimer;
+function showToast(msg,ms=4000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(tTimer);tTimer=setTimeout(()=>t.classList.remove('show'),ms);}
+
+// ============================================================
+// INIT WMS BADGES
+// ============================================================
+setTimeout(()=>{
+  Object.keys(WMS).forEach(id=>{const st=document.getElementById('st-'+id);if(st){st.textContent='WMS';st.className='wbadge wwarn';}});
+  const el=document.getElementById('li-inegi-mun'),tog=el.querySelector('.ltog'),st=document.getElementById('st-inegi-mun');
+  addWMSLayer('inegi-mun',el,tog,st);
+},600);
+
+// ============================================================
+// EXPORT
+// ============================================================
+function openExport(){document.getElementById('expMod').classList.add('show');}
+function doExport(){
+  const fmt=document.getElementById('expFmt').value;
+  document.getElementById('expMod').classList.remove('show'); showLd();
+  setTimeout(()=>{
+    hideLd();
+    if(fmt==='geojson'){
+      const fc={type:'FeatureCollection',name:'Atlas Riesgo Pabellón de Arteaga',features:[{type:'Feature',geometry:{type:'Polygon',coordinates:[[[-102.42,22.23],[-102.35,22.24],[-102.25,22.22],[-102.18,22.18],[-102.17,22.12],[-102.20,22.07],[-102.28,22.05],[-102.36,22.06],[-102.42,22.10],[-102.44,22.17],[-102.42,22.23]]]},properties:{nombre:'Municipio Pabellón de Arteaga',clave:'01-006'}},...Object.values(ulMap).map(u=>u.lyr.toGeoJSON().features).flat()]};
+      dl('atlas_pabellon.geojson',JSON.stringify(fc,null,2),'application/geo+json');
+    } else if(fmt==='csv'){
+      dl('atlas_pabellon.csv','Tipo,Nombre,Nivel_Riesgo,Fuente\nInundación,Arroyo El Rayo,Alto,CONAGUA\nInundación,Arroyo San Agustín,Muy alto,CONAGUA\nIncendio,Pastizal oriente,Alto,CONAFOR\nHeladas,Todo el municipio,Alto,CONAGUA\nErosión,Cerros periféricos,Medio,INEGI\n','text/csv');
+    } else if(fmt==='kml'){
+      dl('atlas_pabellon.kml','<?xml version="1.0"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Atlas Riesgo Pabellón de Arteaga</name></Document></kml>','application/vnd.google-earth.kml+xml');
+    } else { printAtlas(); }
+  },900);
+}
+function dl(n,c,t){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:t}));a.download=n;a.click();}
+
+// ============================================================
+// PRINT
+// ============================================================
+function printAtlas(){
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Atlas Riesgo Pabellón de Arteaga</title><style>body{font-family:'Segoe UI',sans-serif;margin:0;padding:20px;color:#1a1a2e}.cover{text-align:center;padding:36px 0;border-bottom:3px solid #1e3a8a;margin-bottom:24px}.cover h1{font-size:22px;color:#1e3a8a;margin:0 0 6px}.cover h2{font-size:15px;color:#374151;margin:0 0 14px;font-weight:400}.bdg{background:#eff6ff;color:#1d4ed8;padding:3px 10px;border-radius:4px;font-size:10px;font-weight:600;border:1px solid #bfdbfe;margin:2px;display:inline-block}.sec{margin-bottom:20px}.sec h3{font-size:13px;font-weight:700;color:#1d4ed8;border-bottom:1px solid #e5e7eb;padding-bottom:5px;margin-bottom:10px}.rt{width:100%;border-collapse:collapse;font-size:11px}.rt th{background:#eff6ff;color:#1d4ed8;padding:7px 9px;text-align:left;font-weight:600}.rt td{padding:6px 9px;border-bottom:1px solid #f3f4f6}.ba{background:#fef2f2;color:#dc2626;padding:2px 7px;border-radius:3px;font-weight:600;font-size:10px}.bm{background:#fff7ed;color:#ea580c;padding:2px 7px;border-radius:3px;font-weight:600;font-size:10px}.bme{background:#fffbeb;color:#d97706;padding:2px 7px;border-radius:3px;font-weight:600;font-size:10px}.bb{background:#f0fdf4;color:#16a34a;padding:2px 7px;border-radius:3px;font-weight:600;font-size:10px}.foot{margin-top:24px;padding-top:12px;border-top:1px solid #e5e7eb;font-size:10px;color:#9ca3af;display:flex;justify-content:space-between}</style></head><body>
+  <div class="cover"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Protección Civil Municipal · Aguascalientes</div><h1>ATLAS DE RIESGO MUNICIPAL</h1><h2>Pabellón de Arteaga, Aguascalientes, México</h2><div><span class="bdg">CENAPRED</span><span class="bdg">CONAGUA</span><span class="bdg">INEGI</span><span class="bdg">CONAFOR</span><span class="bdg">CONABIO</span></div><div style="font-size:11px;color:#6b7280;margin-top:10px">Versión 3.0 · ${new Date().getFullYear()} · Clave INEGI 01-006</div></div>
+  <div class="sec"><h3>AMENAZAS Y RIESGOS IDENTIFICADOS</h3><table class="rt"><tr><th>Tipo</th><th>Nivel</th><th>Zona afectada</th><th>Fuente</th><th>Período</th></tr><tr><td>Inundaciones</td><td><span class="bm">ALTO</span></td><td>Arroyos El Rayo, San Agustín</td><td>CONAGUA</td><td>Jun–Sep</td></tr><tr><td>Incendios de pastizal</td><td><span class="bm">ALTO</span></td><td>Zona oriente y periférica</td><td>CONAFOR</td><td>Mar–May</td></tr><tr><td>Heladas y granizo</td><td><span class="bm">ALTO</span></td><td>Sector agrícola todo el municipio</td><td>CONAGUA-SMN</td><td>Nov–Feb</td></tr><tr><td>Erosión hídrica</td><td><span class="bme">MEDIO</span></td><td>Cerros y laderas periféricas</td><td>INEGI</td><td>Jun–Sep</td></tr><tr><td>Sequías</td><td><span class="bme">MEDIO</span></td><td>Todo el municipio</td><td>CONAGUA</td><td>Abr–Jun</td></tr><tr><td>Sismos</td><td><span class="bb">BAJO</span></td><td>Zona B sísmica</td><td>SSN-CFE</td><td>Permanente</td></tr></table></div>
+  <div class="sec"><h3>CARACTERÍSTICAS FÍSICAS</h3><table class="rt"><tr><th>Parámetro</th><th>Valor</th></tr><tr><td>Superficie</td><td>~296 km²</td></tr><tr><td>Altitud media</td><td>1,890 msnm</td></tr><tr><td>Clima</td><td>Semicálido subhúmedo C(w1)</td></tr><tr><td>Precipitación anual</td><td>440 mm</td></tr><tr><td>Temperatura media</td><td>18 °C</td></tr><tr><td>Heladas</td><td>~25 días/año</td></tr></table></div>
+  <div class="foot"><span>H. Ayuntamiento Pabellón de Arteaga · Protección Civil Municipal</span><span>Generado: ${new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'})} · v3.0</span></div>
+  <script>window.onload=()=>window.print()<\/script></body></html>`);
+  w.document.close();
+}
+
+// ============================================================
+// CHARTS
+// ============================================================
+const cO={plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#64748b',font:{size:9}},grid:{color:'rgba(30,58,138,.05)'}},y:{ticks:{color:'#64748b',font:{size:9}},grid:{color:'rgba(30,58,138,.05)'}}}};
+new Chart(document.getElementById('pChart'),{type:'bar',data:{labels:['E','F','M','A','My','Jn','Jl','Ag','S','O','N','D'],datasets:[{data:[5,6,7,12,22,65,82,75,50,20,8,5],backgroundColor:['#bfdbfe','#bfdbfe','#bfdbfe','#93c5fd','#93c5fd','#1d4ed8','#1e40af','#1e40af','#2563eb','#60a5fa','#93c5fd','#bfdbfe'],borderRadius:2}]},options:cO});
+new Chart(document.getElementById('rChart'),{type:'doughnut',data:{labels:['Inundación','Incendio','Heladas','Erosión','Sequía','Sismos'],datasets:[{data:[28,22,20,15,10,5],backgroundColor:['#2563eb','#dc2626','#7c3aed','#ea580c','#d97706','#0f766e'],borderWidth:2,borderColor:'#fff'}]},options:{plugins:{legend:{display:true,position:'right',labels:{color:'#475569',font:{size:9},boxWidth:9,padding:6}}}}});
+
+// Start
+window.onload=()=>{showLd();setTimeout(hideLd,1800);};
+</script>
+</body>
+</html>
