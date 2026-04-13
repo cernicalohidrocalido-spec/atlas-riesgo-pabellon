@@ -43,8 +43,15 @@ header{height:var(--hdr);background:#1e3a8a;display:flex;align-items:center;gap:
 .ldot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
 .linfo{flex:1;min-width:0}.lname{font-size:11px;color:var(--t);font-weight:500}.lsub{font-size:9px;color:var(--t3);margin-top:1px}
 .lopacity{display:flex;align-items:center;gap:6px;margin-top:4px}
-.lopacity input[type=range]{flex:1;accent-color:var(--blue);height:14px}
+.lopacity input[type=range]{flex:1;accent-color:var(--blue);height:10px}
 .lopv{font-size:9px;color:var(--t3);min-width:30px;text-align:right}
+.opctl{position:relative;display:flex;align-items:center;flex-shrink:0}
+.opbtn{width:16px;height:16px;border-radius:999px;border:1px solid #cbd5e1;background:#f8fafc;color:#64748b;font-size:8px;line-height:1;font-weight:700;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.opbtn:hover{border-color:#93c5fd;color:#1d4ed8;background:#eff6ff}
+.opctl.open .opbtn{border-color:#93c5fd;color:#1d4ed8;background:#eff6ff}
+.oppop{display:none;position:absolute;right:0;top:24px;z-index:25;background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:6px 7px;box-shadow:0 4px 14px rgba(15,23,42,.12);align-items:center;gap:6px;min-width:118px}
+.opctl.open .oppop{display:flex}
+.oppop input[type=range]{width:78px;accent-color:var(--blue);height:8px}
 .ltog{width:28px;height:15px;border-radius:8px;background:#e2e8f0;border:1px solid #cbd5e1;position:relative;transition:background .2s;flex-shrink:0}
 .ltog::after{content:'';position:absolute;top:2px;left:2px;width:9px;height:9px;border-radius:50%;background:#94a3b8;transition:all .2s}
 .ltog.on{background:#bfdbfe;border-color:var(--blue)}.ltog.on::after{left:15px;background:var(--blue)}
@@ -773,14 +780,14 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
 // Cada entrada tiene: id (para el toggle del sidebar), nombre, archivo, color
 // ============================================================
 const MIS_CAPAS = [
-  { id:'limite',       nombre:'Límite municipal',          archivo:'capas/LimitePabellon.geojson', color:'#1d4ed8', weight:2.4, fillOpacity:0, radius:4 },
+  { id:'limite',       nombre:'Límite municipal',          archivo:'capas/LimitePabellon.geojson', color:'#1d4ed8', weight:1.6, fillOpacity:0, radius:4 },
   { id:'cuerpos-agua',  nombre:'Cuerpos de agua',            archivo:'capas/Cuerpo_agua_lite.geojson', color:'#0369a1', weight:1.4, fillOpacity:0.24, radius:4 },
   { id:'cnp-inund',     nombre:'Canales y corrientes locales', archivo:'capas/canal.json',              color:'#1e40af', weight:2.0, fillOpacity:0.00, radius:4 },
   { id:'cnp-seq',       nombre:'Cuerpos de agua (inventario)', archivo:'capas/Cuerpo_agua_lite.geojson',color:'#d97706', weight:1.2, fillOpacity:0.10, radius:4 },
   { id:'cnp-hela',      nombre:'Curvas de nivel (proxy heladas)', archivo:'capas/curva_nivel50_l_FeaturesToJS.geojson', color:'#818cf8', weight:1.2, fillOpacity:0.00, radius:3 },
   { id:'cnp-sism',      nombre:'Predios en zona de falla',      archivo:'capas/prediosfallas.json',      color:'#7c3aed', weight:1.2, fillOpacity:0.10, radius:4 },
   { id:'cnb-er',        nombre:'Curvas de nivel 50 m',          archivo:'capas/curva_nivel50_l_FeaturesToJS.geojson', color:'#f97316', weight:1.2, fillOpacity:0.00, radius:3 },
-  { id:'cnb-anp',       nombre:'Límite municipal (ordenamiento)', archivo:'capas/LimitePabellon.geojson', color:'#059669', weight:2.2, fillOpacity:0, radius:4 },
+  { id:'cnb-anp',       nombre:'Límite municipal (ordenamiento)', archivo:'capas/LimitePabellon.geojson', color:'#059669', weight:1.6, fillOpacity:0, radius:4 },
   { id:'cnb-veg',       nombre:'Colonias urbanas',              archivo:'capas/colonias.json',           color:'#22c55e', weight:1.2, fillOpacity:0.12, radius:4 },
   { id:'gasoducto',     nombre:'Gasoducto',                  archivo:'capas/Gasoducto.geojson',        color:'#f59e0b', weight:2.4, fillOpacity:0,    radius:4 },
   { id:'servicios',     nombre:'Servicios públicos',         archivo:'capas/servicios_p.json',         color:'#0e7490', weight:1.5, fillOpacity:0.16, radius:5 },
@@ -841,7 +848,7 @@ const WMS = {
 };
 
 const WMS_FALLBACK = {
-  'inegi-mun':         { id:'limite',            nombre:'Límite municipal (fallback)',          archivo:'capas/LimitePabellon.geojson',                  color:'#1d4ed8', weight:2.4, fillOpacity:0, radius:4 },
+  'inegi-mun':         { id:'limite',            nombre:'Límite municipal (fallback)',          archivo:'capas/LimitePabellon.geojson',                  color:'#1d4ed8', weight:1.6, fillOpacity:0, radius:4 },
   'inegi-cam':         { id:'inegi-cam-local',   nombre:'Red vial local (fallback)',             archivo:'capas/calles.json',                             color:'#475569', weight:2.0, fillOpacity:0,    radius:4 },
   'inegi-hid':         { id:'inegi-hid-local',   nombre:'Hidrografía local (fallback)',          archivo:'capas/canal.json',                              color:'#0ea5e9', weight:2.0, fillOpacity:0,    radius:4 },
   'inegi-topo':        { id:'inegi-topo-local',  nombre:'Curvas de nivel local (fallback)',      archivo:'capas/curva_nivel50_l_FeaturesToJS.geojson',   color:'#d97706', weight:1.2, fillOpacity:0,    radius:3 },
@@ -949,15 +956,28 @@ function initPerLayerOpacityControls(){
     if(!linfo) return;
 
     const wrap = document.createElement('div');
-    wrap.className = 'lopacity';
-    wrap.innerHTML = `<input type="range" min="10" max="100" value="${getLayerOpacityPct(tipo,id)}" data-opkey="${key}"><span class="lopv">${getLayerOpacityPct(tipo,id)}%</span>`;
+    wrap.className = 'opctl';
+    wrap.innerHTML = `<button class="opbtn" type="button" title="Transparencia" aria-label="Transparencia">·</button><div class="oppop"><input type="range" min="10" max="100" value="${getLayerOpacityPct(tipo,id)}" data-opkey="${key}"><span class="lopv">${getLayerOpacityPct(tipo,id)}%</span></div>`;
+    const btn = wrap.querySelector('.opbtn');
     const inp = wrap.querySelector('input');
+    btn.addEventListener('click', e=>{
+      e.stopPropagation();
+      document.querySelectorAll('.opctl.open').forEach(n=>{ if(n!==wrap) n.classList.remove('open'); });
+      wrap.classList.toggle('open');
+    });
     inp.addEventListener('click', e=>e.stopPropagation());
     inp.addEventListener('input', e=>{ e.stopPropagation(); setLayerOpacity(tipo,id,e.target.value); });
     wrap.addEventListener('click', e=>e.stopPropagation());
-    linfo.appendChild(wrap);
+    const tog = el.querySelector('.ltog');
+    if(tog) el.insertBefore(wrap, tog);
+    else linfo.appendChild(wrap);
     el.dataset.opacityInit='1';
   });
+
+  if(!window.__opacityPopBound){
+    document.addEventListener('click', ()=>{ document.querySelectorAll('.opctl.open').forEach(n=>n.classList.remove('open')); });
+    window.__opacityPopBound = true;
+  }
 }
 
 function toggleGJ(id, el){
@@ -1470,14 +1490,22 @@ function addGJ(data,name,color){
 function renderUL(){
   const list=document.getElementById('ulList'), keys=Object.keys(ulMap);
   if(!keys.length){list.innerHTML='<div style="font-size:11px;color:var(--t3);text-align:center;padding:16px;background:var(--bg3);border-radius:7px;border:1px dashed #e2e8f0">Aún no hay capas cargadas.</div>';return;}
-  list.innerHTML=keys.map(id=>{const u=ulMap[id];return`<div class="ulcard"><div class="ulhead"><div class="ulcolor" style="background:${u.color}"></div><div class="ulname">${u.name}</div><div class="ulcount">${u.count} elem.</div><div class="ltog ${u.vis?'on':''}" onclick="togUL('${id}',this)" style="margin-left:4px"></div></div><div class="lopacity" style="margin:6px 0 2px"><input type="range" min="10" max="100" value="${u.opacity||100}" oninput="setULOpacity('${id}',this.value)"><span class="lopv">${u.opacity||100}%</span></div><div class="ulactions"><button class="uabtn" onclick="zoomUL('${id}')">🔍 Zoom</button><button class="uabtn" onclick="dlUL('${id}')">⬇ GeoJSON</button><button class="uabtn del" onclick="rmUL('${id}')">✕ Quitar</button></div></div>`;}).join('');
+  list.innerHTML=keys.map(id=>{const u=ulMap[id];return`<div class="ulcard"><div class="ulhead"><div class="ulcolor" style="background:${u.color}"></div><div class="ulname">${u.name}</div><div class="ulcount">${u.count} elem.</div><div class="opctl" style="margin-left:4px"><button class="opbtn" type="button" title="Transparencia" aria-label="Transparencia" onclick="toggleULOpacityPopover(this,event)">·</button><div class="oppop" onclick="event.stopPropagation()"><input type="range" min="10" max="100" value="${u.opacity||100}" data-ulop="${id}" oninput="setULOpacity('${id}',this.value)"><span class="lopv">${u.opacity||100}%</span></div></div><div class="ltog ${u.vis?'on':''}" onclick="togUL('${id}',this)" style="margin-left:4px"></div></div><div class="ulactions"><button class="uabtn" onclick="zoomUL('${id}')">🔍 Zoom</button><button class="uabtn" onclick="dlUL('${id}')">⬇ GeoJSON</button><button class="uabtn del" onclick="rmUL('${id}')">✕ Quitar</button></div></div>`;}).join('');
+}
+
+function toggleULOpacityPopover(btn,e){
+  e.stopPropagation();
+  const wrap = btn.closest('.opctl');
+  if(!wrap) return;
+  document.querySelectorAll('.opctl.open').forEach(n=>{ if(n!==wrap) n.classList.remove('open'); });
+  wrap.classList.toggle('open');
 }
 
 function setULOpacity(id,pct){
   const u=ulMap[id]; if(!u) return;
   u.opacity=Math.max(10,Math.min(100,Number(pct)||100));
   setLeafletLayerOpacity(u.lyr,u.opacity/100);
-  document.querySelectorAll(`[oninput="setULOpacity('${id}',this.value)"]`).forEach(inp=>{
+  document.querySelectorAll(`input[data-ulop="${id}"]`).forEach(inp=>{
     const v=inp.parentElement?.querySelector('.lopv');
     if(v) v.textContent=`${u.opacity}%`;
   });
