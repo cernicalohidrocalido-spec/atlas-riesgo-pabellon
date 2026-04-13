@@ -79,6 +79,8 @@ header{height:var(--hdr);background:#1e3a8a;display:flex;align-items:center;gap:
 .mctrl{position:absolute;top:10px;left:10px;z-index:500;display:flex;flex-direction:column;gap:5px}
 .mbt{width:30px;height:30px;background:white;border:1px solid #cbd5e1;border-radius:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);font-size:13px;transition:all .15s;box-shadow:0 1px 4px rgba(0,0,0,.10)}
 .mbt:hover{background:#eff6ff;color:var(--blue);border-color:#93c5fd}.mbt.atool{background:#dbeafe;border-color:var(--blue);color:var(--blue)}
+.mbt.home{width:42px;height:42px;font-size:19px;font-weight:700;border-radius:7px;border-color:#93c5fd;color:var(--blue);background:#eff6ff;box-shadow:0 2px 8px rgba(29,78,216,.20)}
+.mbt.home:hover{background:#dbeafe;border-color:var(--blue)}
 .cbar{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(255,255,255,.96);border:1px solid #cbd5e1;border-radius:5px;padding:4px 10px;font-size:10px;color:var(--t3);white-space:nowrap;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 #ctext{color:var(--blue);font-weight:600;font-family:monospace;font-size:11px}
 .scalebar{position:absolute;bottom:10px;right:calc(var(--panel) + 10px);z-index:500;background:rgba(255,255,255,.92);border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;font-size:10px;color:var(--t3);box-shadow:0 1px 3px rgba(0,0,0,.08)}
@@ -134,6 +136,16 @@ header{height:var(--hdr);background:#1e3a8a;display:flex;align-items:center;gap:
 .rmbar-w{background:#e2e8f0;border-radius:4px;height:7px;overflow:hidden;margin-bottom:4px}
 .rmbar{height:100%;border-radius:4px;background:linear-gradient(90deg,#22c55e,#f59e0b,#f97316)}
 .rmticks{display:flex;justify-content:space-between;font-size:9px;color:var(--t3)}
+.rfact-list{margin-top:9px;border-top:1px dashed #bfdbfe;padding-top:8px}
+.rfact-title{font-size:9px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.rfact{display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid #f1f5f9}
+.rfact:last-child{border-bottom:none}
+.rfact-ico{font-size:12px;flex-shrink:0;width:18px;text-align:center}
+.rfact-info{flex:1;min-width:0}
+.rfact-nm{font-size:10px;font-weight:600;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rfact-tipo{font-size:9px;color:var(--t3)}
+.rfact-w{font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;flex-shrink:0}
+.rfact-hi{background:#fee2e2;color:#991b1b}.rfact-me{background:#fef9c3;color:#854d0e}.rfact-lo{background:#dcfce7;color:#166534}
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
 .scard{background:var(--bg3);border:1px solid #e2e8f0;border-radius:7px;padding:8px;text-align:center}
 .snum{font-size:16px;font-weight:700;color:var(--blue3)}.slb{font-size:9px;color:var(--t3);margin-top:1px}.str{font-size:9px;margin-top:2px}
@@ -634,7 +646,7 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
   <div class="mctrl">
     <div class="mbt" onclick="map.zoomIn()">+</div>
     <div class="mbt" onclick="map.zoomOut()">−</div>
-    <div class="mbt" onclick="goHome()" title="Ir al municipio">⌂</div>
+    <div class="mbt home" onclick="goHome()" title="Enfocar límite municipal">⌂</div>
     <div class="mbt" onclick="locateUser()" title="Mi ubicación">◎</div>
     <div class="mbt" onclick="fitUL()" title="Ajustar mis capas">⊞</div>
     <div class="mbt" id="s2Btn" onclick="toggleS2Panel()" title="Imágenes Sentinel-2 · ESA">🛰</div>
@@ -808,6 +820,7 @@ const MIS_CAPAS = [
 // MAP
 // ============================================================
 const CENTER = [22.1527, -102.2983];
+let MUNICIPAL_BOUNDS = null;
 const map = L.map('map', { center:CENTER, zoom:12, zoomControl:false });
 const BM = {
   osm:  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19}),
@@ -1558,7 +1571,13 @@ map.on('click',e=>{
 // ============================================================
 // NAV
 // ============================================================
-function goHome(){map.flyTo(CENTER,12,{duration:1});}
+function goHome(){
+  if(MUNICIPAL_BOUNDS && MUNICIPAL_BOUNDS.isValid()){
+    map.fitBounds(MUNICIPAL_BOUNDS, {padding:[30,30]});
+    return;
+  }
+  map.flyTo(CENTER,12,{duration:1});
+}
 function locateUser(){map.locate({setView:true,maxZoom:15});map.once('locationfound',e=>{L.circleMarker(e.latlng,{radius:8,color:'#60a5fa',fillColor:'#3b82f6',fillOpacity:.85,weight:2}).bindPopup('<b>Tu ubicación</b>').addTo(map).openPopup();});map.once('locationerror',()=>showToast('⚠ No se pudo obtener la ubicación'));}
 
 // ============================================================
@@ -1718,6 +1737,49 @@ const NIVEL_LABELS = {
   'Medio':'lm','MEDIO':'lm','Bajo':'lb','BAJO':'lb','B':'lb'
 };
 
+// Metadatos de capas para el desglose de riesgo
+const LAYER_RISK_META = {
+  'cuerpos-agua':     { nombre:'Cuerpos de agua',               tipo:'Inundación / Hidrológico',    icono:'🌊' },
+  'cnp-inund':        { nombre:'Canales y corrientes locales',  tipo:'Inundación',                  icono:'🌊' },
+  'cnp-seq':          { nombre:'Cuerpos de agua (inventario)',  tipo:'Inundación / Hidrológico',    icono:'🌊' },
+  'cnp-hela':         { nombre:'Curvas de nivel (heladas)',     tipo:'Relieve · Heladas',           icono:'❄️' },
+  'cnp-sism':         { nombre:'Predios en zona de falla',      tipo:'Falla geológica / Sismo',     icono:'🌋' },
+  'cnb-er':           { nombre:'Curvas de nivel 50 m',          tipo:'Erosión hídrica / Relieve',   icono:'⛰' },
+  'cnb-anp':          { nombre:'Límite mun. (ordenamiento)',    tipo:'Territorial',                 icono:'🗺' },
+  'cnb-veg':          { nombre:'Colonias urbanas',              tipo:'Vulnerabilidad urbana',        icono:'🏘' },
+  'fallas':           { nombre:'Grietas y fallas 2024',         tipo:'Falla geológica',             icono:'🌋' },
+  'gasoducto':        { nombre:'Gasoducto',                     tipo:'Infraestructura peligrosa',   icono:'⚡' },
+  'servicios':        { nombre:'Servicios públicos',            tipo:'Capacidad de respuesta',      icono:'🏥' },
+  'predios-fallas':   { nombre:'Predios en zona de falla',      tipo:'Falla geológica',             icono:'🌋' },
+  'carretera20':      { nombre:'Carretera / vialidades',        tipo:'Infraestructura vial',        icono:'🛣' },
+  'linea-morada':     { nombre:'Infraestructura crítica',       tipo:'Infraestructura peligrosa',   icono:'⚡' },
+  'predios-rurales':  { nombre:'Predios rurales',               tipo:'Exposición rural',            icono:'🌾' },
+  'subestacion':      { nombre:'Subestación eléctrica',         tipo:'Infraestructura eléctrica',   icono:'⚡' },
+  'comercios':        { nombre:'Comercios (DENUE)',             tipo:'Actividad económica',         icono:'🏪' },
+  'gasolinerias':     { nombre:'Gasolinería',                   tipo:'Infraestructura peligrosa',   icono:'⛽' },
+  'estgas':           { nombre:'Estaciones de gas',             tipo:'Infraestructura peligrosa',   icono:'🔥' },
+  'accidentes':       { nombre:'Accidentes de tránsito',        tipo:'Riesgo vial',                 icono:'🚗' },
+  'denue':            { nombre:'Directorio DENUE',              tipo:'Densidad de actividad',       icono:'🏪' },
+  'inegi-mun':        { nombre:'Límite municipal (INEGI)',      tipo:'Territorial',                 icono:'🗺' },
+  'inegi-hid':        { nombre:'Hidrografía (INEGI)',           tipo:'Inundación / Hidrológico',    icono:'🌊' },
+  'inegi-geol-fallas':{ nombre:'Fallas y fracturas (INEGI)',   tipo:'Falla geológica',             icono:'🌋' },
+  'inegi-uso':        { nombre:'Uso de suelo (INEGI)',          tipo:'Uso del territorio',          icono:'🌿' },
+  'inegi-cam':        { nombre:'Vías de comunicación (INEGI)', tipo:'Infraestructura vial',        icono:'🛣' },
+  'inegi-topo':       { nombre:'Curvas de nivel (INEGI)',       tipo:'Relieve',                     icono:'⛰' },
+  'inegi-clima-prec': { nombre:'Precipitación anual (INEGI)',  tipo:'Disponibilidad hídrica',      icono:'🌧' },
+  'inegi-clima-temp': { nombre:'Temperatura media (INEGI)',    tipo:'Clima / Temperatura',         icono:'🌡' },
+  'inegi-est':        { nombre:'AGEBs (INEGI)',                 tipo:'Estructura urbana',           icono:'🏘' },
+  'inegi-loc':        { nombre:'Colonias y vialidades (INEGI)',tipo:'Vulnerabilidad urbana',        icono:'🏘' },
+  'inegi-topoformas': { nombre:'Topoformas (INEGI)',            tipo:'Relieve / Erosión',           icono:'⛰' },
+  'inegi-hidro-div':  { nombre:'División hidrológica (INEGI)', tipo:'Hidrológico',                 icono:'🌊' },
+  'inund':  { nombre:'Zonas inundables',         tipo:'Inundación',             icono:'🌊' },
+  'ref':    { nombre:'Refugios temporales',      tipo:'Capacidad de respuesta', icono:'⛺' },
+  'hosp':   { nombre:'Hospitales y clínicas',   tipo:'Capacidad médica',       icono:'🏥' },
+  'vias':   { nombre:'Rutas de evacuación',     tipo:'Capacidad de respuesta', icono:'🛣' },
+  'pozo':   { nombre:'Pozos de agua',           tipo:'Abasto de emergencia',   icono:'💧' },
+  'limite': { nombre:'Límite municipal',        tipo:'Territorial',            icono:'🗺' },
+};
+
 const DEFAULT_PANEL = { rph:'', rpb:'' };
 
 function _countLeafletFeatures(layer){
@@ -1735,31 +1797,55 @@ function calcularIndiceMunicipalRiesgo(){
     'predios-fallas':1.2,'predios-rurales':1.0,'denue':0.9,'comercios':0.9,
     'servicios':0.8
   };
-
+  const factores=[];
   let sum=0;
+
   for(const [id,entry] of Object.entries(miCapasMap)){
     if(!entry?.on) continue;
     const cnt=_countLeafletFeatures(entry.layer);
-    const w=pesos[id] ?? 1.0;
-    sum += w*Math.log10(1+cnt);
+    const w=pesos[id]??1.0;
+    const contrib=w*Math.log10(1+cnt);
+    sum+=contrib;
+    const meta=LAYER_RISK_META[id]||{};
+    factores.push({id,nombre:meta.nombre||id,tipo:meta.tipo||'Amenaza',icono:meta.icono||'📌',peso:w,contrib,fuente:'GeoJSON local'});
   }
   for(const [id,on] of Object.entries(wmsOn)){
-    if(on) sum += (pesos[id] ?? 0.8)*1.6;
+    if(!on) continue;
+    const w=pesos[id]??0.8;
+    const contrib=w*1.6;
+    sum+=contrib;
+    const meta=LAYER_RISK_META[id]||{};
+    factores.push({id,nombre:meta.nombre||id,tipo:meta.tipo||'Amenaza',icono:meta.icono||'📡',peso:w,contrib,fuente:'API INEGI WMS'});
   }
   for(const [id,on] of Object.entries(geoOn)){
-    if(on) sum += (pesos[id] ?? 1.0)*Math.log10(2);
+    if(!on) continue;
+    const w=pesos[id]??1.0;
+    const contrib=w*Math.log10(2);
+    sum+=contrib;
+    const meta=LAYER_RISK_META[id]||{};
+    factores.push({id,nombre:meta.nombre||id,tipo:meta.tipo||'Amenaza',icono:meta.icono||'📌',peso:w,contrib,fuente:'GeoJSON embebido'});
   }
   for(const [id,on] of Object.entries(locOn)){
-    if(on) sum += (pesos[id] ?? 0.7)*Math.log10(4);
+    if(!on) continue;
+    const w=pesos[id]??0.7;
+    const contrib=w*Math.log10(4);
+    sum+=contrib;
+    const meta=LAYER_RISK_META[id]||{};
+    factores.push({id,nombre:meta.nombre||id,tipo:meta.tipo||'Amenaza',icono:meta.icono||'📌',peso:w,contrib,fuente:'Local'});
   }
   for(const [id,u] of Object.entries(ulMap)){
-    if(u?.vis) sum += 0.9*Math.log10(1+_countLeafletFeatures(u.lyr));
+    if(!u?.vis) continue;
+    const cnt=_countLeafletFeatures(u.lyr);
+    const contrib=0.9*Math.log10(1+cnt);
+    sum+=contrib;
+    factores.push({id,nombre:u.name,tipo:'Capa de usuario',icono:'📁',peso:0.9,contrib,fuente:'Cargada por usuario'});
   }
 
   const score=Math.max(0,Math.min(10,Number((sum*0.55).toFixed(1))));
-  const nivel = score>=7.0 ? 'RIESGO ALTO' : score>=4.0 ? 'RIESGO MEDIO' : 'RIESGO BAJO';
-  const pct = Math.max(5,Math.min(100,Math.round(score*10)));
-  return {score,nivel,pct};
+  const nivel=score>=7.0?'RIESGO ALTO':score>=4.0?'RIESGO MEDIO':'RIESGO BAJO';
+  const pct=Math.max(5,Math.min(100,Math.round(score*10)));
+  factores.sort((a,b)=>b.contrib-a.contrib);
+  return {score,nivel,pct,factores};
 }
 
 function actualizarResumenMunicipal(){
@@ -1770,8 +1856,24 @@ function actualizarResumenMunicipal(){
   const s=meter.querySelector('.rms');
   const b=meter.querySelector('.rmbar');
   if(t) t.textContent=r.nivel;
-  if(s) s.textContent=`Score: ${r.score} / 10 · calculado con capas activas`;
+  if(s) s.textContent=`Score: ${r.score} / 10 · ${r.factores.length} factor${r.factores.length!==1?'es':''} activo${r.factores.length!==1?'s':''}`;
   if(b) b.style.width=`${r.pct}%`;
+
+  // Desglose de factores activos
+  let breakdown=meter.querySelector('.rfact-list');
+  if(!breakdown){ breakdown=document.createElement('div'); breakdown.className='rfact-list'; meter.appendChild(breakdown); }
+  if(!r.factores.length){
+    breakdown.innerHTML='<div class="rfact-title">Factores de riesgo activos</div><div style="font-size:10px;color:var(--t3);text-align:center;padding:6px 0">Activa capas para ver el desglose</div>';
+    return;
+  }
+  const maxC=r.factores[0].contrib||1;
+  breakdown.innerHTML='<div class="rfact-title">Factores activos que determinan el índice</div>'+
+    r.factores.map(f=>{
+      const rel=f.contrib/maxC;
+      const wCls=rel>=0.66?'rfact-hi':rel>=0.33?'rfact-me':'rfact-lo';
+      const wLabel=rel>=0.66?'CRÍTICO':rel>=0.33?'MODERADO':'MENOR';
+      return `<div class="rfact"><span class="rfact-ico">${f.icono}</span><div class="rfact-info"><div class="rfact-nm" title="${f.nombre}">${f.nombre}</div><div class="rfact-tipo">${f.tipo} · <em>${f.fuente}</em></div></div><span class="rfact-w ${wCls}">${wLabel}</span></div>`;
+    }).join('');
 }
 
 function actualizarPanelPunto(latlng, riesgos) {
@@ -1987,7 +2089,10 @@ window.onload = () => {
     .then(data => {
       try {
         const b = L.geoJSON(data).getBounds();
-        if(b.isValid()) map.fitBounds(b, { padding:[30,30] });
+        if(b.isValid()){
+          MUNICIPAL_BOUNDS = b;
+          map.fitBounds(MUNICIPAL_BOUNDS, { padding:[30,30] });
+        }
       } catch(e) { /* fallback a CENTER/zoom12 ya establecido */ }
     })
     .catch(() => { /* no bloquear si falla */ });
