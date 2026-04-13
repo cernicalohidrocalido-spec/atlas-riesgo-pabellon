@@ -1664,8 +1664,88 @@ function descargarCapa(id) {
 // ═══════════════════════════════════════════════
 function calcRiesgoEnPunto(latlng) {
   const riesgos = [];
+  const yaAgregados = new Set();
 
-  // Revisa capas GeoJSON embebidas activas
+  // ── Capas WMS activas (no hay datos PiP en cliente, pero la capa cubre el municipio) ──
+  for(const [id, on] of Object.entries(wmsOn)){
+    if(!on) continue;
+    const meta = LAYER_RISK_META[id] || {};
+    const nombre = meta.nombre || WMS[id]?.label || id;
+    if(!yaAgregados.has(nombre)){
+      yaAgregados.add(nombre);
+      riesgos.push({ capa: nombre, nivel: null, props: { Tipo: meta.tipo||'Capa API', Fuente:'INEGI WMS', Estado:'Activa en el municipio' } });
+    }
+  }
+
+  // ── MIS_CAPAS activas ──
+  for(const [id, entry] of Object.entries(miCapasMap)){
+    if(!entry?.on) continue;
+    const cap = MIS_CAPAS_INDEX[id];
+    const meta = LAYER_RISK_META[id] || {};
+    const nombre = meta.nombre || cap?.nombre || id;
+    // Buscar atributos de la feature más cercana (PiP para polígonos, vecino para punto/línea)
+    let found = false;
+    entry.layer.eachLayer(layer => {
+      if(found) return;
+      try {
+        const geom = layer.feature?.geometry;
+        if(!geom) return;
+        const props = layer.feature?.properties || {};
+        const nivel = props.nivel_riesgo || props.nivel || props.riesgo || null;
+        if((geom.type==='Polygon'||geom.type==='MultiPolygon')){
+          const coords = (geom.type==='Polygon' ? geom.coordinates[0] : geom.coordinates[0][0]).map(c=>[c[1],c[0]]);
+          if(L.polygon(coords).getBounds().contains(latlng)){
+            riesgos.push({ capa: nombre, nivel, props });
+            yaAgregados.add(nombre); found=true;
+          }
+        }
+      } catch(e){}
+    });
+    if(!found && !yaAgregados.has(nombre)){
+      yaAgregados.add(nombre);
+      riesgos.push({ capa: nombre, nivel: null, props: { Tipo: meta.tipo||'Amenaza', Archivo: cap?.archivo||id, Estado:'Activa · sin intersección en este punto' } });
+    }
+  }
+
+  // ── Capas locales prediseñadas activas ──
+  for(const [id, on] of Object.entries(locOn)){
+    if(!on) continue;
+    const meta = LAYER_RISK_META[id] || {};
+    const nombre = meta.nombre || id;
+    if(!yaAgregados.has(nombre)){
+      yaAgregados.add(nombre);
+      riesgos.push({ capa: nombre, nivel: null, props: { Tipo: meta.tipo||'Capa local', Estado:'Activa en el municipio' } });
+    }
+  }
+
+  // ── Capas de usuario activas ──
+  for(const [id, u] of Object.entries(ulMap)){
+    if(!u.vis) continue;
+    const nombre = u.name;
+    let found = false;
+    u.lyr.eachLayer(layer => {
+      if(found) return;
+      try {
+        const geom = layer.feature?.geometry;
+        if(!geom) return;
+        const props = layer.feature?.properties || {};
+        const nivel = props.nivel_riesgo || props.nivel || props.riesgo || null;
+        if((geom.type==='Polygon'||geom.type==='MultiPolygon')){
+          const coords = (geom.type==='Polygon' ? geom.coordinates[0] : geom.coordinates[0][0]).map(c=>[c[1],c[0]]);
+          if(L.polygon(coords).getBounds().contains(latlng)){
+            riesgos.push({ capa: nombre, nivel, props });
+            yaAgregados.add(nombre); found=true;
+          }
+        }
+      } catch(e){}
+    });
+    if(!found && !yaAgregados.has(nombre)){
+      yaAgregados.add(nombre);
+      riesgos.push({ capa: nombre, nivel: null, props: { Tipo:'Capa de usuario', Estado:'Activa · sin intersección en este punto' } });
+    }
+  }
+
+  // ── Capas GeoJSON embebidas activas ──
   for (const [id, lyr] of Object.entries(geoL)) {
     if (!geoOn[id]) continue;
     lyr.eachLayer(layer => {
@@ -1674,49 +1754,8 @@ function calcRiesgoEnPunto(latlng) {
         if (!geom) return;
         const props = layer.feature?.properties || {};
         const nivel = props.nivel || props.nivel_riesgo || props.zona || props.grado || null;
-        // pip (point-in-polygon) básico para polígonos
         if (geom.type === 'Polygon' && L.polygon(geom.coordinates[0].map(c=>[c[1],c[0]])).getBounds().contains(latlng)) {
           riesgos.push({ capa: GEO_DATA[id]?.label || id, nivel, props });
-        }
-        if (geom.type === 'LineString') {
-          // No aplica PIP pero reportamos si hay líneas activas
-        }
-      } catch(e) {}
-    });
-  }
-
-  // Revisa MIS_CAPAS activas
-  for (const [id, entry] of Object.entries(miCapasMap)) {
-    if (!entry.on) continue;
-    entry.layer.eachLayer(layer => {
-      try {
-        const geom = layer.feature?.geometry;
-        const props = layer.feature?.properties || {};
-        const nivel = props.nivel_riesgo || props.nivel || props.riesgo || null;
-        const cap = MIS_CAPAS_INDEX[id];
-        if (geom?.type === 'Polygon') {
-          const coords = geom.coordinates[0].map(c => [c[1], c[0]]);
-          if (L.polygon(coords).getBounds().contains(latlng)) {
-            riesgos.push({ capa: cap?.nombre || id, nivel, props });
-          }
-        }
-      } catch(e) {}
-    });
-  }
-
-  // Revisa capas de usuario (ulMap)
-  for (const [id, u] of Object.entries(ulMap)) {
-    if (!u.vis) continue;
-    u.lyr.eachLayer(layer => {
-      try {
-        const geom = layer.feature?.geometry;
-        const props = layer.feature?.properties || {};
-        const nivel = props.nivel_riesgo || props.nivel || props.riesgo || null;
-        if (geom?.type === 'Polygon') {
-          const coords = geom.coordinates[0].map(c => [c[1], c[0]]);
-          if (L.polygon(coords).getBounds().contains(latlng)) {
-            riesgos.push({ capa: u.name, nivel, props });
-          }
         }
       } catch(e) {}
     });
@@ -1849,8 +1888,16 @@ function calcularIndiceMunicipalRiesgo(){
 }
 
 function actualizarResumenMunicipal(){
-  const meter=document.querySelector('.rpb .rmeter');
-  if(!meter) return;
+  // Si el panel está en modo "análisis de punto", restaurar el panel general
+  let meter = document.querySelector('.rpb .rmeter');
+  if(!meter){
+    if(DEFAULT_PANEL.rph && DEFAULT_PANEL.rpb){
+      document.querySelector('.rph').innerHTML = DEFAULT_PANEL.rph;
+      document.querySelector('.rpb').innerHTML  = DEFAULT_PANEL.rpb;
+    }
+    meter = document.querySelector('.rpb .rmeter');
+    if(!meter) return;
+  }
   const r=calcularIndiceMunicipalRiesgo();
   const t=meter.querySelector('.rmt');
   const s=meter.querySelector('.rms');
@@ -1890,8 +1937,9 @@ function actualizarPanelPunto(latlng, riesgos) {
     rpb.innerHTML = `
       <div style="text-align:center;padding:32px 16px;color:var(--t3)">
         <div style="font-size:28px;margin-bottom:10px">📍</div>
-        <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px">Sin capas activas en este punto</div>
-        <div style="font-size:11px">Activa capas en el panel izquierdo<br>y haz clic sobre una zona del mapa</div>
+        <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px">No hay capas activadas</div>
+        <div style="font-size:11px">Activa capas en el panel izquierdo<br>para visualizar el análisis de riesgo</div>
+        <button onclick="resetPanel()" style="margin-top:12px;background:var(--bg3);border:1px solid var(--bdr);color:var(--t3);padding:5px 14px;border-radius:5px;font-size:10px;cursor:pointer">↩ Ver panel general</button>
       </div>
     `;
     return;
