@@ -320,7 +320,7 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
             <span class="wbadge wgeo" id="st-cnp-sism">GEO</span><div class="ltog"></div>
           </div>
           <!-- Zonas sísmicas municipales levantadas por PCP -->
-          <div class="litem" id="li-pcp" onclick="toggleMiCapa('pcp',this)">
+          <div class="litem" id="li-pcp" onclick="showToast('⚠ Zonificación sísmica PCP no disponible en capas/ por ahora',4500)">
             <div class="ldot" style="background:#6d28d9"></div>
             <div class="linfo"><div class="lname">Zonificación sísmica PCP</div><div class="lsub">PCP_PA1_Pabellón_de_Arteaga_ZS</div></div>
             <span class="wbadge wwarn" id="st-pcp">GEO</span><div class="ltog"></div>
@@ -600,7 +600,7 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
       <div class="gstep"><div class="gsnum">PASO 3 — Activar GitHub Pages</div><div class="gstext">Settings → Pages → Source: <span class="gscode">main branch / (root)</span> → Save</div></div>
       <div class="gstep"><div class="gsnum">PASO 4 — URL pública</div><div class="gstext"><span class="gscode">https://cernicalohidrocalido-spec.github.io/atlas-riesgo-pabellon/</span></div></div>
       <div class="gstep"><div class="gsnum">EDITAR MIS_CAPAS EN EL SCRIPT</div><div class="gstext">Busca el array <span class="gscode">MIS_CAPAS</span> al inicio del script y agrega tus capas:</div></div>
-      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:9px;font-family:monospace;font-size:10px;color:#334155;line-height:1.8;overflow-x:auto">{id:'fallas', archivo:'capas/fallas.geojson',<br>&nbsp;nombre:'Grietas y fallas 2024', color:'#b91c1c'},<br>{id:'gasoducto', archivo:'capas/gasoducto.geojson',<br>&nbsp;nombre:'Gasoducto', color:'#f59e0b'},<br>{id:'servicios', archivo:'capas/servicios.geojson',<br>&nbsp;nombre:'Servicios públicos', color:'#0e7490'},<br>{id:'pcp', archivo:'capas/zonas_sismicas.geojson',<br>&nbsp;nombre:'Zonas sísmicas PCP', color:'#7c3aed'}</div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:9px;font-family:monospace;font-size:10px;color:#334155;line-height:1.8;overflow-x:auto">{id:'fallas', archivo:'capas/fallas_2024.geojson',<br>&nbsp;nombre:'Grietas y fallas 2024', color:'#b91c1c'},<br>{id:'gasoducto', archivo:'capas/Gasoducto.geojson',<br>&nbsp;nombre:'Gasoducto', color:'#f59e0b'},<br>{id:'servicios', archivo:'capas/servicios_p.json',<br>&nbsp;nombre:'Servicios públicos', color:'#0e7490'}</div>
       <div style="font-size:11px;color:var(--t3);margin-top:8px;line-height:1.7;background:var(--bg3);border-radius:6px;padding:8px;border:1px solid #e2e8f0">Los popups se generan <b>automáticamente</b> desde los atributos de cada GeoJSON exportado de ArcGIS Pro.</div>
     </div>
 
@@ -776,8 +776,7 @@ const MIS_CAPAS = [
   { id:'gasoducto',     nombre:'Gasoducto',                  archivo:'capas/Gasoducto.geojson',        color:'#f59e0b', weight:2.4, fillOpacity:0,    radius:4 },
   { id:'servicios',     nombre:'Servicios públicos',         archivo:'capas/servicios_p.json',         color:'#0e7490', weight:1.5, fillOpacity:0.16, radius:5 },
   { id:'predios-fallas',nombre:'Predios en zona de falla',   archivo:'capas/prediosfallas.json',       color:'#dc2626', weight:1.2, fillOpacity:0.12, radius:4 },
-  { id:'fallas',        nombre:'Grietas y fallas 2024',        archivo:'capas/prediosfallas.json',       color:'#b91c1c', weight:1.2, fillOpacity:0.12, radius:4 },
-  { id:'pcp',           nombre:'Zonificación sísmica PCP',     archivo:'capas/prediosfallas.json',       color:'#7c3aed', weight:1.2, fillOpacity:0.10, radius:4 },
+  { id:'fallas',        nombre:'Grietas y fallas 2024',        archivo:'capas/fallas_2024.geojson',      color:'#b91c1c', weight:1.2, fillOpacity:0.12, radius:4 },
   { id:'carretera20',   nombre:'Carretera 20 especificaciones',archivo:'capas/calles.json',              color:'#334155', weight:2.2, fillOpacity:0,    radius:4 },
   { id:'linea-morada',  nombre:'Línea de infraestructura',     archivo:'capas/Gasoducto.geojson',        color:'#7c3aed', weight:2.2, fillOpacity:0,    radius:4 },
   { id:'predios-rurales',nombre:'Predios fuera área urbana',   archivo:'capas/colonias.json',            color:'#b45309', weight:1.1, fillOpacity:0.10, radius:4 },
@@ -960,9 +959,10 @@ function toggleGJ(id, el){
     map.removeLayer(geoL[id]);
     tog.classList.remove('on'); el.classList.remove('on'); geoOn[id]=false;
     if(st){st.textContent='OFF';st.className='wbadge wwarn';}
+    actualizarResumenMunicipal();
   } else {
     if(!geoL[id]){ buildGeoLayer(id); }
-    if(geoL[id]){ geoL[id].addTo(map); applyStoredLayerOpacity('toggleGJ',id); geoOn[id]=true; tog.classList.add('on'); el.classList.add('on'); if(st){st.textContent='✓';st.className='wbadge wok';} }
+    if(geoL[id]){ geoL[id].addTo(map); applyStoredLayerOpacity('toggleGJ',id); geoOn[id]=true; tog.classList.add('on'); el.classList.add('on'); if(st){st.textContent='✓';st.className='wbadge wok';} actualizarResumenMunicipal(); }
   }
 }
 
@@ -1133,6 +1133,7 @@ function toggleWMS(id,el){
     tog.classList.remove('on'); el.classList.remove('on'); wmsOn[id]=false;
     wmsFallbackOn[id]=null;
     setWMSState(id,'idle');
+    actualizarResumenMunicipal();
     return;
   }
   if(!wmsL[id]) buildWMSLayer(id);
@@ -1141,6 +1142,7 @@ function toggleWMS(id,el){
   wmsL[id].addTo(map);
   applyStoredLayerOpacity('toggleWMS',id);
   tog.classList.add('on'); el.classList.add('on'); wmsOn[id]=true;
+  actualizarResumenMunicipal();
 }
 
 // ============================================================
@@ -1202,6 +1204,7 @@ function toggleLocal(id,el){
   const tog=el.querySelector('.ltog'), g=locL[id]; if(!g) return;
   if(locOn[id]){map.removeLayer(g);tog.classList.remove('on');el.classList.remove('on');locOn[id]=false;}
   else{g.addTo(map);applyStoredLayerOpacity('toggleLocal',id);tog.classList.add('on');el.classList.add('on');locOn[id]=true;}
+  actualizarResumenMunicipal();
 }
 
 // ============================================================
@@ -1252,6 +1255,11 @@ function toggleMiCapa(id,el){
     fetch(cap.archivo)
       .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
       .then(data=>{
+        if(id==='cuerpos-agua' && Array.isArray(data?.features) && data.features.length>1500){
+          const step=Math.ceil(data.features.length/1500);
+          data={...data,features:data.features.filter((_,i)=>i%step===0)};
+          showToast(`ℹ Cuerpos de agua optimizada en cliente (${data.features.length} elementos).`,4500);
+        }
         const layer=buildMiLayer(data,cap);
         miCapasMap[id]={layer,on:false};
         hideLd();
@@ -1269,11 +1277,13 @@ function toggleMiCapa(id,el){
     map.removeLayer(entry.layer);
     tog.classList.remove('on'); el.classList.remove('on'); entry.on=false;
     if(st){st.textContent='OFF';st.className='wbadge wwarn';}
+    actualizarResumenMunicipal();
   } else {
     entry.layer.addTo(map);
     applyStoredLayerOpacity('toggleMiCapa',id);
     tog.classList.add('on'); el.classList.add('on'); entry.on=true;
     if(st){st.textContent='✓';st.className='wbadge wok';}
+    actualizarResumenMunicipal();
   }
 }
 
@@ -1388,6 +1398,7 @@ function addGJ(data,name,color){
   renderUL();
   document.getElementById('ulCount').textContent=Object.keys(ulMap).length;
   showToast(`✅ Capa "${name}" cargada — ${fc} elementos`,3000);
+  actualizarResumenMunicipal();
   return lyr;
 }
 
@@ -1406,9 +1417,9 @@ function setULOpacity(id,pct){
     if(v) v.textContent=`${u.opacity}%`;
   });
 }
-function togUL(id,tog){const u=ulMap[id];if(!u)return;u.vis=!u.vis;u.vis?(u.lyr.addTo(map),setLeafletLayerOpacity(u.lyr,(u.opacity||100)/100)):map.removeLayer(u.lyr);tog.classList.toggle('on',u.vis);}
+function togUL(id,tog){const u=ulMap[id];if(!u)return;u.vis=!u.vis;u.vis?(u.lyr.addTo(map),setLeafletLayerOpacity(u.lyr,(u.opacity||100)/100)):map.removeLayer(u.lyr);tog.classList.toggle('on',u.vis);actualizarResumenMunicipal();}
 function zoomUL(id){try{map.fitBounds(ulMap[id].lyr.getBounds(),{padding:[30,30]});}catch(e){}}
-function rmUL(id){if(!ulMap[id])return;map.removeLayer(ulMap[id].lyr);delete ulMap[id];document.getElementById('ulCount').textContent=Object.keys(ulMap).length;renderUL();}
+function rmUL(id){if(!ulMap[id])return;map.removeLayer(ulMap[id].lyr);delete ulMap[id];document.getElementById('ulCount').textContent=Object.keys(ulMap).length;renderUL();actualizarResumenMunicipal();}
 function dlUL(id){const u=ulMap[id];if(!u)return;const blob=new Blob([JSON.stringify(u.lyr.toGeoJSON(),null,2)],{type:'application/geo+json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=u.name.replace(/\s+/g,'_')+'.geojson';a.click();}
 function fitUL(){const ks=Object.keys(ulMap);if(!ks.length){goHome();return;}const b=L.latLngBounds([]);ks.forEach(id=>{try{b.extend(ulMap[id].lyr.getBounds());}catch(e){}});if(b.isValid())map.fitBounds(b,{padding:[30,30]});}
 
@@ -1614,6 +1625,62 @@ const NIVEL_LABELS = {
   'Medio':'lm','MEDIO':'lm','Bajo':'lb','BAJO':'lb','B':'lb'
 };
 
+const DEFAULT_PANEL = { rph:'', rpb:'' };
+
+function _countLeafletFeatures(layer){
+  let n=0;
+  if(!layer) return n;
+  if(typeof layer.eachLayer==='function') layer.eachLayer(()=>n++);
+  return n;
+}
+
+function calcularIndiceMunicipalRiesgo(){
+  const pesos={
+    'cuerpos-agua':1.4,'cnp-inund':1.3,'cnp-seq':1.2,'cnp-hela':1.1,
+    'fallas':1.5,'cnp-sism':1.5,'cnb-er':1.2,
+    'gasoducto':1.3,'carretera20':1.1,'linea-morada':1.0,'accidentes':1.1,
+    'predios-fallas':1.2,'predios-rurales':1.0,'denue':0.9,'comercios':0.9,
+    'servicios':0.8
+  };
+
+  let sum=0;
+  for(const [id,entry] of Object.entries(miCapasMap)){
+    if(!entry?.on) continue;
+    const cnt=_countLeafletFeatures(entry.layer);
+    const w=pesos[id] ?? 1.0;
+    sum += w*Math.log10(1+cnt);
+  }
+  for(const [id,on] of Object.entries(wmsOn)){
+    if(on) sum += (pesos[id] ?? 0.8)*1.6;
+  }
+  for(const [id,on] of Object.entries(geoOn)){
+    if(on) sum += (pesos[id] ?? 1.0)*Math.log10(2);
+  }
+  for(const [id,on] of Object.entries(locOn)){
+    if(on) sum += (pesos[id] ?? 0.7)*Math.log10(4);
+  }
+  for(const [id,u] of Object.entries(ulMap)){
+    if(u?.vis) sum += 0.9*Math.log10(1+_countLeafletFeatures(u.lyr));
+  }
+
+  const score=Math.max(0,Math.min(10,Number((sum*0.55).toFixed(1))));
+  const nivel = score>=7.0 ? 'RIESGO ALTO' : score>=4.0 ? 'RIESGO MEDIO' : 'RIESGO BAJO';
+  const pct = Math.max(5,Math.min(100,Math.round(score*10)));
+  return {score,nivel,pct};
+}
+
+function actualizarResumenMunicipal(){
+  const meter=document.querySelector('.rpb .rmeter');
+  if(!meter) return;
+  const r=calcularIndiceMunicipalRiesgo();
+  const t=meter.querySelector('.rmt');
+  const s=meter.querySelector('.rms');
+  const b=meter.querySelector('.rmbar');
+  if(t) t.textContent=r.nivel;
+  if(s) s.textContent=`Score: ${r.score} / 10 · calculado con capas activas`;
+  if(b) b.style.width=`${r.pct}%`;
+}
+
 function actualizarPanelPunto(latlng, riesgos) {
   const rph = document.querySelector('.rph');
   const rpb = document.querySelector('.rpb');
@@ -1685,9 +1752,11 @@ function actualizarPanelPunto(latlng, riesgos) {
 }
 
 function resetPanel() {
-  document.querySelector('.rph').innerHTML = `<h2>Panel de análisis</h2><p>Pabellón de Arteaga · Ags. · 2024</p>`;
-  // Restaurar contenido original — recarga la página
-  location.reload();
+  if(DEFAULT_PANEL.rph && DEFAULT_PANEL.rpb){
+    document.querySelector('.rph').innerHTML = DEFAULT_PANEL.rph;
+    document.querySelector('.rpb').innerHTML = DEFAULT_PANEL.rpb;
+    actualizarResumenMunicipal();
+  }
 }
 
 map.on('click',async e=>{
@@ -1770,6 +1839,7 @@ function applySentinel(){
   s2Layer.addTo(map);
   document.getElementById('s2Btn').classList.add('s2on');
   _s2st(`🛰 Cargando Sentinel-2 cloudless ${year}…`);
+  actualizarResumenMunicipal();
 }
 
 function removeSentinel(){
@@ -1777,6 +1847,7 @@ function removeSentinel(){
   document.getElementById('s2Btn').classList.remove('s2on');
   _s2st('');
   showToast('Capa Sentinel-2 eliminada');
+  actualizarResumenMunicipal();
 }
 
 function _s2st(msg, isErr){
@@ -1812,6 +1883,9 @@ window.onload = () => {
   initWMSBadges();
   validateMiCapasBindings();
   initPerLayerOpacityControls();
+  DEFAULT_PANEL.rph = document.querySelector('.rph')?.innerHTML || '';
+  DEFAULT_PANEL.rpb = document.querySelector('.rpb')?.innerHTML || '';
+  actualizarResumenMunicipal();
   // ── Auto-enfoque al límite municipal en cada carga ──
   fetch('capas/LimitePabellon.geojson')
     .then(r => r.json())
