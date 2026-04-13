@@ -896,6 +896,11 @@ function getLayerOpacityFactor(tipo,id){ return getLayerOpacityPct(tipo,id)/100;
 function setLeafletLayerOpacity(layer, factor){
   if(!layer) return;
 
+  if(typeof layer.eachLayer==='function' && !layer.feature){
+    layer.eachLayer(sub=>setLeafletLayerOpacity(sub,factor));
+    return;
+  }
+
   if(typeof layer.setStyle==='function'){
     const o = layer.options || {};
     if(o.__baseOpacity===undefined) o.__baseOpacity = (typeof o.opacity==='number' ? o.opacity : 1);
@@ -910,10 +915,6 @@ function setLeafletLayerOpacity(layer, factor){
     const o = layer.options || {};
     if(o.__baseMarkerOpacity===undefined) o.__baseMarkerOpacity = (typeof o.opacity==='number' ? o.opacity : 1);
     layer.setOpacity(o.__baseMarkerOpacity * factor);
-  }
-
-  if(typeof layer.eachLayer==='function'){
-    layer.eachLayer(sub=>setLeafletLayerOpacity(sub,factor));
   }
 }
 
