@@ -323,7 +323,7 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
         <div class="cat-hdr" onclick="toggleCat('cat-antro')">
           <span class="cat-icon">🏭</span>
           <span class="cat-title">Antrópicos</span>
-          <span class="cat-count">7</span>
+          <span class="cat-count">11</span>
           <span class="cat-arrow">▶</span>
         </div>
         <div class="cat-body">
@@ -367,6 +367,30 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
             <div class="linfo"><div class="lname">Límite municipal (ordenamiento)</div><div class="lsub">Archivo local real · LimitePabellon.geojson</div></div>
             <span class="wbadge wgeo" id="st-cnb-anp">GEO</span><div class="ltog"></div>
           </div>
+          <!-- Subestación eléctrica: infraestructura crítica -->
+          <div class="litem" id="li-subestacion" onclick="toggleMiCapa('subestacion',this)">
+            <div class="ldot" style="background:#eab308"></div>
+            <div class="linfo"><div class="lname">Subestación eléctrica</div><div class="lsub">Archivo local real · subestacionelectrica.json · 6 polígonos</div></div>
+            <span class="wbadge wwarn" id="st-subestacion">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Gasolinería: punto de venta de combustible, riesgo antrópico -->
+          <div class="litem" id="li-gasolinerias" onclick="toggleMiCapa('gasolinerias',this)">
+            <div class="ldot" style="background:#ef4444"></div>
+            <div class="linfo"><div class="lname">Gasolinería`s</div><div class="lsub">Archivo local real · gasolinerias.json · 5 puntos</div></div>
+            <span class="wbadge wwarn" id="st-gasolinerias">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Estaciones de gas: DENUE, infraestructura de riesgo -->
+          <div class="litem" id="li-estgas" onclick="toggleMiCapa('estgas',this)">
+            <div class="ldot" style="background:#f97316"></div>
+            <div class="linfo"><div class="lname">Estaciones de gas</div><div class="lsub">Archivo local real · estacionesdegas.json · 6 puntos</div></div>
+            <span class="wbadge wwarn" id="st-estgas">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Accidentes de tránsito: historial y puntos de conflicto vial -->
+          <div class="litem" id="li-accidentes" onclick="toggleMiCapa('accidentes',this)">
+            <div class="ldot" style="background:#f43f5e"></div>
+            <div class="linfo"><div class="lname">Accidentes de tránsito</div><div class="lsub">Archivo local real · accidentestransito.json · 481 puntos</div></div>
+            <span class="wbadge wwarn" id="st-accidentes">GEO</span><div class="ltog"></div>
+          </div>
         </div>
       </div>
 
@@ -375,7 +399,7 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
         <div class="cat-hdr" onclick="toggleCat('cat-expo')">
           <span class="cat-icon">📍</span>
           <span class="cat-title">Exposición</span>
-          <span class="cat-count">5</span>
+          <span class="cat-count">7</span>
           <span class="cat-arrow">▶</span>
         </div>
         <div class="cat-body">
@@ -407,6 +431,18 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
             <div class="ldot" style="background:#2563eb"></div>
             <div class="linfo"><div class="lname">Límite municipal oficial</div><div class="lsub">División territorial · API oficial INEGI</div></div>
             <span class="wbadge wgeo" id="st-inegi-mun">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Comercios: elementos expuestos del sector económico -->
+          <div class="litem" id="li-comercios" onclick="toggleMiCapa('comercios',this)">
+            <div class="ldot" style="background:#8b5cf6"></div>
+            <div class="linfo"><div class="lname">Comercios (DENUE)</div><div class="lsub">Archivo local real · comercios.json · 48 puntos</div></div>
+            <span class="wbadge wwarn" id="st-comercios">GEO</span><div class="ltog"></div>
+          </div>
+          <!-- Directorio de negocios INEGI DENUE: exposición económica -->
+          <div class="litem" id="li-denue" onclick="toggleMiCapa('denue',this)">
+            <div class="ldot" style="background:#a78bfa"></div>
+            <div class="linfo"><div class="lname">Directorio de negocios DENUE</div><div class="lsub">Archivo local real · inegi_denue.json · 1,038 puntos</div></div>
+            <span class="wbadge wwarn" id="st-denue">GEO</span><div class="ltog"></div>
           </div>
         </div>
       </div>
@@ -683,6 +719,12 @@ const MIS_CAPAS = [
   { id:'carretera20',   nombre:'Carretera 20 especificaciones',archivo:'capas/calles.json',              color:'#334155', weight:2.2, fillOpacity:0,    radius:4 },
   { id:'linea-morada',  nombre:'Línea de infraestructura',     archivo:'capas/Gasoducto.geojson',        color:'#7c3aed', weight:2.2, fillOpacity:0,    radius:4 },
   { id:'predios-rurales',nombre:'Predios fuera área urbana',   archivo:'capas/colonias.json',            color:'#b45309', weight:1.1, fillOpacity:0.10, radius:4 },
+  { id:'subestacion',   nombre:'Subestación eléctrica',         archivo:'capas/subestacionelectrica.json',  color:'#eab308', weight:1.5, fillOpacity:0.22, radius:5 },
+  { id:'comercios',     nombre:'Comercios (DENUE)',              archivo:'capas/comercios.json',             color:'#8b5cf6', weight:1.2, fillOpacity:0.20, radius:5 },
+  { id:'gasolinerias',  nombre:'Gasolinería`s',                  archivo:'capas/gasolinerias.json',          color:'#ef4444', weight:1.5, fillOpacity:0.22, radius:6 },
+  { id:'estgas',        nombre:'Estaciones de gas',              archivo:'capas/estacionesdegas.json',       color:'#f97316', weight:1.5, fillOpacity:0.22, radius:6 },
+  { id:'accidentes',    nombre:'Accidentes de tránsito',         archivo:'capas/accidentestransito.json',    color:'#f43f5e', weight:1.3, fillOpacity:0.22, radius:4 },
+  { id:'denue',         nombre:'Directorio de negocios DENUE',   archivo:'capas/inegi_denue.json',           color:'#a78bfa', weight:1.2, fillOpacity:0.18, radius:4 },
 ];
 
 // ============================================================
