@@ -39,6 +39,9 @@ header{height:var(--hdr);background:#1e3a8a;display:flex;align-items:center;gap:
 .litem:hover{background:#eff6ff;border-color:#bfdbfe}.litem.on{background:#eff6ff;border-color:#bfdbfe}
 .ldot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
 .linfo{flex:1;min-width:0}.lname{font-size:11px;color:var(--t);font-weight:500}.lsub{font-size:9px;color:var(--t3);margin-top:1px}
+.lopacity{display:flex;align-items:center;gap:6px;margin-top:4px}
+.lopacity input[type=range]{flex:1;accent-color:var(--blue);height:14px}
+.lopv{font-size:9px;color:var(--t3);min-width:30px;text-align:right}
 .ltog{width:28px;height:15px;border-radius:8px;background:#e2e8f0;border:1px solid #cbd5e1;position:relative;transition:background .2s;flex-shrink:0}
 .ltog::after{content:'';position:absolute;top:2px;left:2px;width:9px;height:9px;border-radius:50%;background:#94a3b8;transition:all .2s}
 .ltog.on{background:#bfdbfe;border-color:var(--blue)}.ltog.on::after{left:15px;background:var(--blue)}
@@ -74,10 +77,6 @@ header{height:var(--hdr);background:#1e3a8a;display:flex;align-items:center;gap:
 .bmbtns{display:flex;gap:3px}
 .bmb{padding:3px 7px;border-radius:4px;font-size:10px;cursor:pointer;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;transition:all .15s}
 .bmb.active{background:var(--blue);border-color:var(--blue);color:white}.bmb:hover:not(.active){background:#dbeafe;border-color:#93c5fd;color:var(--blue)}
-.apiop{position:absolute;bottom:82px;left:10px;z-index:500;background:white;border:1px solid #cbd5e1;border-radius:7px;padding:8px;box-shadow:0 2px 8px rgba(0,0,0,.10);width:220px}
-.apiop select,.apiop input[type=range]{width:100%}
-.apiop select{font-size:10px;border:1px solid #cbd5e1;border-radius:4px;padding:4px;background:#fff;color:#334155;margin-bottom:6px}
-.apiopv{font-size:10px;color:#475569;text-align:right;margin-top:2px}
 /* ── Sentinel-2 panel ── */
 .s2panel{position:absolute;bottom:82px;left:240px;z-index:501;background:white;border:1px solid #a78bfa;border-radius:9px;padding:10px 12px;box-shadow:0 4px 16px rgba(109,40,217,.15);width:264px;display:none}
 .s2panel.show{display:block}
@@ -636,12 +635,6 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
       <div class="bmb" id="bb-dark" onclick="setBM('dark',this)">Oscuro</div>
     </div>
   </div>
-  <div class="apiop" id="apiOpacityBox">
-    <div class="bml">Transparencia API</div>
-    <select id="apiLayerSel" onchange="syncApiOpacityUI()"></select>
-    <input id="apiOpacityRange" type="range" min="10" max="100" value="75" oninput="setSelectedWMSOpacity(this.value)">
-    <div class="apiopv" id="apiOpacityVal">75%</div>
-  </div>
 
   <!-- ═══ SENTINEL-2 PANEL ═══ -->
   <div class="s2panel" id="s2Panel">
@@ -874,6 +867,77 @@ const GEO_DATA = {};
 
 // ── Capas GeoJSON ya instanciadas ──
 const geoL={}, geoOn={};
+const layerOpacityPct = {}; // key: tipo:id -> 10..100
+
+function opKey(tipo,id){ return `${tipo}:${id}`; }
+function getLayerOpacityPct(tipo,id){ return layerOpacityPct[opKey(tipo,id)] ?? 100; }
+function getLayerOpacityFactor(tipo,id){ return getLayerOpacityPct(tipo,id)/100; }
+
+function setLeafletLayerOpacity(layer, factor){
+  if(!layer) return;
+
+  if(typeof layer.setStyle==='function'){
+    const o = layer.options || {};
+    if(o.__baseOpacity===undefined) o.__baseOpacity = (typeof o.opacity==='number' ? o.opacity : 1);
+    if(o.__baseFillOpacity===undefined) o.__baseFillOpacity = (typeof o.fillOpacity==='number' ? o.fillOpacity : 1);
+    layer.setStyle({
+      opacity: o.__baseOpacity * factor,
+      fillOpacity: o.__baseFillOpacity * factor
+    });
+  }
+
+  if(typeof layer.setOpacity==='function'){
+    const o = layer.options || {};
+    if(o.__baseMarkerOpacity===undefined) o.__baseMarkerOpacity = (typeof o.opacity==='number' ? o.opacity : 1);
+    layer.setOpacity(o.__baseMarkerOpacity * factor);
+  }
+
+  if(typeof layer.eachLayer==='function'){
+    layer.eachLayer(sub=>setLeafletLayerOpacity(sub,factor));
+  }
+}
+
+function applyStoredLayerOpacity(tipo,id){
+  const factor = getLayerOpacityFactor(tipo,id);
+  if(tipo==='toggleWMS' && wmsL[id]){ wmsL[id].setOpacity((WMS[id]?.opacity ?? 0.75) * factor); return; }
+  if(tipo==='toggleMiCapa' && miCapasMap[id]?.layer){ setLeafletLayerOpacity(miCapasMap[id].layer, factor); return; }
+  if(tipo==='toggleGJ' && geoL[id]){ setLeafletLayerOpacity(geoL[id], factor); return; }
+  if(tipo==='toggleLocal' && locL[id]){ setLeafletLayerOpacity(locL[id], factor); }
+}
+
+function setLayerOpacity(tipo,id,pct){
+  const val = Math.max(10, Math.min(100, Number(pct)||100));
+  layerOpacityPct[opKey(tipo,id)] = val;
+  if(tipo==='toggleWMS' && WMS[id]) WMS[id].opacity = (WMS[id].opacity ?? 0.75);
+  applyStoredLayerOpacity(tipo,id);
+  document.querySelectorAll(`input[data-opkey="${opKey(tipo,id)}"]`).forEach(inp=>{
+    inp.value = String(val);
+    const v = inp.parentElement?.querySelector('.lopv');
+    if(v) v.textContent = `${val}%`;
+  });
+}
+
+function initPerLayerOpacityControls(){
+  document.querySelectorAll('#tab-capas .litem').forEach(el=>{
+    if(el.dataset.opacityInit==='1') return;
+    const onclick = el.getAttribute('onclick') || '';
+    const m = onclick.match(/(toggleMiCapa|toggleWMS|toggleGJ|toggleLocal)\('([^']+)'/);
+    if(!m) return;
+    const tipo = m[1], id = m[2], key = opKey(tipo,id);
+    const linfo = el.querySelector('.linfo');
+    if(!linfo) return;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'lopacity';
+    wrap.innerHTML = `<input type="range" min="10" max="100" value="${getLayerOpacityPct(tipo,id)}" data-opkey="${key}"><span class="lopv">${getLayerOpacityPct(tipo,id)}%</span>`;
+    const inp = wrap.querySelector('input');
+    inp.addEventListener('click', e=>e.stopPropagation());
+    inp.addEventListener('input', e=>{ e.stopPropagation(); setLayerOpacity(tipo,id,e.target.value); });
+    wrap.addEventListener('click', e=>e.stopPropagation());
+    linfo.appendChild(wrap);
+    el.dataset.opacityInit='1';
+  });
+}
 
 function toggleGJ(id, el){
   const tog = el.querySelector('.ltog');
@@ -886,7 +950,7 @@ function toggleGJ(id, el){
     if(st){st.textContent='OFF';st.className='wbadge wwarn';}
   } else {
     if(!geoL[id]){ buildGeoLayer(id); }
-    if(geoL[id]){ geoL[id].addTo(map); geoOn[id]=true; tog.classList.add('on'); el.classList.add('on'); if(st){st.textContent='✓';st.className='wbadge wok';} }
+    if(geoL[id]){ geoL[id].addTo(map); applyStoredLayerOpacity('toggleGJ',id); geoOn[id]=true; tog.classList.add('on'); el.classList.add('on'); if(st){st.textContent='✓';st.className='wbadge wok';} }
   }
 }
 
@@ -969,7 +1033,7 @@ function buildWMSLayer(id){
     version:'1.1.1',
     styles:'',
     tiled:true,
-    opacity:def.opacity??0.75,
+    opacity:(def.opacity??0.75) * getLayerOpacityFactor('toggleWMS',id),
     uppercase:true
   });
 
@@ -991,38 +1055,6 @@ function buildWMSLayer(id){
       if(wmsOn[id]) enableWMSFallback(id);
     }
   });
-}
-
-function refreshApiLayerSelector(){
-  const sel=document.getElementById('apiLayerSel');
-  if(!sel) return;
-  const current=sel.value;
-  sel.innerHTML=Object.keys(WMS).map(id=>{
-    const active=wmsOn[id]?'● ':'';
-    return `<option value="${id}">${active}${WMS[id].label}</option>`;
-  }).join('');
-  if(current && WMS[current]) sel.value=current;
-  syncApiOpacityUI();
-}
-
-function syncApiOpacityUI(){
-  const sel=document.getElementById('apiLayerSel');
-  const rng=document.getElementById('apiOpacityRange');
-  const val=document.getElementById('apiOpacityVal');
-  if(!sel||!rng||!val||!WMS[sel.value]) return;
-  const pct=Math.round((WMS[sel.value].opacity??0.75)*100);
-  rng.value=pct;
-  val.textContent=`${pct}%`;
-}
-
-function setSelectedWMSOpacity(pct){
-  const sel=document.getElementById('apiLayerSel');
-  const val=document.getElementById('apiOpacityVal');
-  if(!sel||!WMS[sel.value]) return;
-  const opacity=Math.max(0.1,Math.min(1,Number(pct)/100));
-  WMS[sel.value].opacity=opacity;
-  if(wmsL[sel.value]) wmsL[sel.value].setOpacity(opacity);
-  if(val) val.textContent=`${Math.round(opacity*100)}%`;
 }
 
 async function getWMSFeatureInfo(id,latlng){
@@ -1089,15 +1121,14 @@ function toggleWMS(id,el){
     tog.classList.remove('on'); el.classList.remove('on'); wmsOn[id]=false;
     wmsFallbackOn[id]=null;
     setWMSState(id,'idle');
-    refreshApiLayerSelector();
     return;
   }
   if(!wmsL[id]) buildWMSLayer(id);
   if(!wmsL[id]) return;
   setWMSState(id,'loading');
   wmsL[id].addTo(map);
+  applyStoredLayerOpacity('toggleWMS',id);
   tog.classList.add('on'); el.classList.add('on'); wmsOn[id]=true;
-  refreshApiLayerSelector();
 }
 
 // ============================================================
@@ -1158,7 +1189,7 @@ locL.locs=locGrp;
 function toggleLocal(id,el){
   const tog=el.querySelector('.ltog'), g=locL[id]; if(!g) return;
   if(locOn[id]){map.removeLayer(g);tog.classList.remove('on');el.classList.remove('on');locOn[id]=false;}
-  else{g.addTo(map);tog.classList.add('on');el.classList.add('on');locOn[id]=true;}
+  else{g.addTo(map);applyStoredLayerOpacity('toggleLocal',id);tog.classList.add('on');el.classList.add('on');locOn[id]=true;}
 }
 
 // ============================================================
@@ -1228,6 +1259,7 @@ function toggleMiCapa(id,el){
     if(st){st.textContent='OFF';st.className='wbadge wwarn';}
   } else {
     entry.layer.addTo(map);
+    applyStoredLayerOpacity('toggleMiCapa',id);
     tog.classList.add('on'); el.classList.add('on'); entry.on=true;
     if(st){st.textContent='✓';st.className='wbadge wok';}
   }
@@ -1339,7 +1371,7 @@ function addGJ(data,name,color){
       }
     }
   }).addTo(map);
-  ulMap[id]={lyr,name,color,count:fc,vis:true};
+  ulMap[id]={lyr,name,color,count:fc,vis:true,opacity:100};
   try{map.fitBounds(lyr.getBounds(),{padding:[40,40]});}catch(e){}
   renderUL();
   document.getElementById('ulCount').textContent=Object.keys(ulMap).length;
@@ -1350,10 +1382,19 @@ function addGJ(data,name,color){
 function renderUL(){
   const list=document.getElementById('ulList'), keys=Object.keys(ulMap);
   if(!keys.length){list.innerHTML='<div style="font-size:11px;color:var(--t3);text-align:center;padding:16px;background:var(--bg3);border-radius:7px;border:1px dashed #e2e8f0">Aún no hay capas cargadas.</div>';return;}
-  list.innerHTML=keys.map(id=>{const u=ulMap[id];return`<div class="ulcard"><div class="ulhead"><div class="ulcolor" style="background:${u.color}"></div><div class="ulname">${u.name}</div><div class="ulcount">${u.count} elem.</div><div class="ltog ${u.vis?'on':''}" onclick="togUL('${id}',this)" style="margin-left:4px"></div></div><div class="ulactions"><button class="uabtn" onclick="zoomUL('${id}')">🔍 Zoom</button><button class="uabtn" onclick="dlUL('${id}')">⬇ GeoJSON</button><button class="uabtn del" onclick="rmUL('${id}')">✕ Quitar</button></div></div>`;}).join('');
+  list.innerHTML=keys.map(id=>{const u=ulMap[id];return`<div class="ulcard"><div class="ulhead"><div class="ulcolor" style="background:${u.color}"></div><div class="ulname">${u.name}</div><div class="ulcount">${u.count} elem.</div><div class="ltog ${u.vis?'on':''}" onclick="togUL('${id}',this)" style="margin-left:4px"></div></div><div class="lopacity" style="margin:6px 0 2px"><input type="range" min="10" max="100" value="${u.opacity||100}" oninput="setULOpacity('${id}',this.value)"><span class="lopv">${u.opacity||100}%</span></div><div class="ulactions"><button class="uabtn" onclick="zoomUL('${id}')">🔍 Zoom</button><button class="uabtn" onclick="dlUL('${id}')">⬇ GeoJSON</button><button class="uabtn del" onclick="rmUL('${id}')">✕ Quitar</button></div></div>`;}).join('');
 }
 
-function togUL(id,tog){const u=ulMap[id];if(!u)return;u.vis=!u.vis;u.vis?u.lyr.addTo(map):map.removeLayer(u.lyr);tog.classList.toggle('on',u.vis);}
+function setULOpacity(id,pct){
+  const u=ulMap[id]; if(!u) return;
+  u.opacity=Math.max(10,Math.min(100,Number(pct)||100));
+  setLeafletLayerOpacity(u.lyr,u.opacity/100);
+  document.querySelectorAll(`[oninput="setULOpacity('${id}',this.value)"]`).forEach(inp=>{
+    const v=inp.parentElement?.querySelector('.lopv');
+    if(v) v.textContent=`${u.opacity}%`;
+  });
+}
+function togUL(id,tog){const u=ulMap[id];if(!u)return;u.vis=!u.vis;u.vis?(u.lyr.addTo(map),setLeafletLayerOpacity(u.lyr,(u.opacity||100)/100)):map.removeLayer(u.lyr);tog.classList.toggle('on',u.vis);}
 function zoomUL(id){try{map.fitBounds(ulMap[id].lyr.getBounds(),{padding:[30,30]});}catch(e){}}
 function rmUL(id){if(!ulMap[id])return;map.removeLayer(ulMap[id].lyr);delete ulMap[id];document.getElementById('ulCount').textContent=Object.keys(ulMap).length;renderUL();}
 function dlUL(id){const u=ulMap[id];if(!u)return;const blob=new Blob([JSON.stringify(u.lyr.toGeoJSON(),null,2)],{type:'application/geo+json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=u.name.replace(/\s+/g,'_')+'.geojson';a.click();}
@@ -1434,7 +1475,6 @@ function initWMSBadges(){
   Object.keys(WMS).forEach(id=>{
     setWMSState(id,'idle');
   });
-  refreshApiLayerSelector();
 }
 
 function validateMiCapasBindings(){
@@ -1759,6 +1799,7 @@ window.onload = () => {
   showLd();
   initWMSBadges();
   validateMiCapasBindings();
+  initPerLayerOpacityControls();
   // ── Auto-enfoque al límite municipal en cada carga ──
   fetch('capas/LimitePabellon.geojson')
     .then(r => r.json())
