@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/shpjs/3.6.3/shp.min.js"></script>
 <style>
 :root{--bg:#f0f4f9;--bg2:#fff;--bg3:#f4f7fb;--bg4:#e8eef6;--bdr:rgba(30,64,175,.10);--bdr2:rgba(30,64,175,.20);--t:#0f172a;--t2:#334155;--t3:#64748b;--blue:#1d4ed8;--blue2:#2563eb;--blue3:#1e3a8a;--green:#16a34a;--amber:#b45309;--orange:#c2410c;--red:#dc2626;--sidebar:304px;--panel:336px;--hdr:54px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -488,11 +489,6 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
         </div>
       </div>
 
-      <!-- NOTA GEOJSON -->
-      <div style="margin-top:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:8px 10px;font-size:10px;color:#92400e;line-height:1.6">
-        <b>📂 Tus GeoJSON de ArcGIS Pro:</b> Ponlos en <code>capas/</code> en el repo y descomenta las líneas del array <code>MIS_CAPAS</code> para activarlos. Los badges en amarillo se volverán ✓ verde al cargarse.
-      </div>
-
     </div>
 
     <!-- MIS CAPAS TAB -->
@@ -501,9 +497,12 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
       <div class="dropbtn" onclick="document.getElementById('fileIn').click()">
         <div style="font-size:22px;margin-bottom:4px">📁</div>
         Arrastra tu archivo aquí o haz clic para seleccionar<br>
-        <span style="font-size:10px;color:#94a3b8;margin-top:3px;display:block">Formatos: .geojson · .json · .kml</span>
+        <span style="font-size:10px;color:#94a3b8;margin-top:3px;display:block">
+          Formatos: .geojson · .json · .kml · .kmz · .zip (Shapefile)
+        </span>
       </div>
-      <input type="file" id="fileIn" accept=".geojson,.json,.kml" style="display:none" onchange="loadFileIn(this)">
+      <input type="file" id="fileIn" accept=".geojson,.json,.kml,.kmz,.zip" 
+       style="display:none" onchange="loadFileIn(this)">
 
       <div class="slabel" style="margin-top:12px">📋 Capas cargadas <span id="ulCount" style="background:#eff6ff;color:var(--blue);padding:1px 6px;border-radius:10px;font-size:9px;border:1px solid #bfdbfe">0</span></div>
       <div id="ulList">
@@ -1322,20 +1321,68 @@ mapWrap.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('show
 
 function loadFileIn(inp){[...inp.files].forEach(procFile);inp.value='';}
 function procFile(f){
-  const nm=f.name.replace(/\.(geojson|json|kml)$/i,'');
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    try{
+  const nm = f.name.replace(/\.(geojson|json|kml|kmz|zip)$/i, '');
+  const ext = f.name.split('.').pop().toLowerCase();
+
+  // Shapefile (.zip) y KMZ (.kmz) — binarios
+  if(ext === 'zip' || ext === 'kmz') {
+    const reader = new FileReader();
+    reader.onload = async ev => {
+      try {
+        showLd();
+        if(ext === 'kmz') {
+          // KMZ es un ZIP con doc.kml dentro
+          const JSZip = await import('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js')
+            .catch(()=>null);
+          if(!JSZip) throw new Error('JSZip no disponible para KMZ');
+          const zip = await (JSZip.default||JSZip).loadAsync(ev.target.result);
+          const kmlFile = Object.keys(zip.files).find(n => n.endsWith('.kml'));
+          if(!kmlFile) throw new Error('No se encontró .kml dentro del KMZ');
+          const kmlText = await zip.files[kmlFile].async('string');
+          const kmlDoc = new DOMParser().parseFromString(kmlText, 'text/xml');
+          const data = kml2gj(kmlDoc);
+          if(!data.features.length) throw new Error('KMZ sin geometrías legibles');
+          const COLS = ['#1d4ed8','#dc2626','#16a34a','#d97706','#7c3aed','#0e7490','#c2410c'];
+          addGJ(data, nm, COLS[ulCount % COLS.length]);
+        } else {
+          // Shapefile ZIP
+          if(typeof shp === 'undefined') throw new Error('shpjs no cargado');
+          const data = await shp(ev.target.result);
+          const fc = Array.isArray(data) ? 
+            { type:'FeatureCollection', features: data.flatMap(d => d.features) } : data;
+          if(!fc.features) throw new Error('ZIP sin geometrías');
+          const COLS = ['#1d4ed8','#dc2626','#16a34a','#d97706','#7c3aed','#0e7490','#c2410c'];
+          addGJ(fc, nm, COLS[ulCount % COLS.length]);
+        }
+        switchTab(document.querySelectorAll('.stab')[1], 'mias');
+        hideLd();
+      } catch(e) {
+        hideLd();
+        showToast(`❌ Error en "${f.name}": ${e.message}`, 6000);
+      }
+    };
+    reader.readAsArrayBuffer(f);
+    return;
+  }
+
+  // GeoJSON / JSON / KML — texto
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
       let data;
-      if(f.name.toLowerCase().endsWith('.kml')){
-        const kmlDoc=new DOMParser().parseFromString(ev.target.result,'text/xml');
-        data=kml2gj(kmlDoc);
-      } else { data=JSON.parse(ev.target.result); }
-      if(!data||!data.features) throw new Error('GeoJSON inválido o sin features');
-      const COLS=['#1d4ed8','#dc2626','#16a34a','#d97706','#7c3aed','#0e7490','#c2410c'];
-      addGJ(data,nm,COLS[ulCount%COLS.length]);
-      switchTab(document.querySelectorAll('.stab')[1],'mias');
-    } catch(e){showToast(`❌ Error en "${f.name}": ${e.message}`,5000);}
+      if(ext === 'kml') {
+        const kmlDoc = new DOMParser().parseFromString(ev.target.result, 'text/xml');
+        data = kml2gj(kmlDoc);
+      } else {
+        data = JSON.parse(ev.target.result);
+      }
+      if(!data || !data.features) throw new Error('GeoJSON inválido o sin features');
+      const COLS = ['#1d4ed8','#dc2626','#16a34a','#d97706','#7c3aed','#0e7490','#c2410c'];
+      addGJ(data, nm, COLS[ulCount % COLS.length]);
+      switchTab(document.querySelectorAll('.stab')[1], 'mias');
+    } catch(e) {
+      showToast(`❌ Error en "${f.name}": ${e.message}`, 5000);
+    }
   };
   reader.readAsText(f);
 }
@@ -1478,8 +1525,192 @@ function validateMiCapasBindings(){
   }
 }
 
+function descargarCapa(id) {
+  // Capas GeoJSON embebidas (GEO_DATA)
+  if(GEO_DATA[id]) {
+    const blob = new Blob([JSON.stringify(GEO_DATA[id].data, null, 2)], {type:'application/geo+json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = id + '.geojson';
+    a.click();
+    showToast(`⬇ Descargando ${GEO_DATA[id].label}…`, 3000);
+    return;
+  }
+  // MIS_CAPAS (archivos locales)
+  const cap = MIS_CAPAS_INDEX[id];
+  if(cap && miCapasMap[id]) {
+    const data = miCapasMap[id].layer.toGeoJSON();
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/geo+json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (cap.nombre || id).replace(/\s+/g,'_') + '.geojson';
+    a.click();
+    return;
+  }
+  showToast(`⚠ Activa la capa primero para poder descargarla.`, 4000);
+}
+
+// ═══════════════════════════════════════════════
+// PANEL DERECHO REACTIVO AL CLIC
+// ═══════════════════════════════════════════════
+function calcRiesgoEnPunto(latlng) {
+  const riesgos = [];
+
+  // Revisa capas GeoJSON embebidas activas
+  for (const [id, lyr] of Object.entries(geoL)) {
+    if (!geoOn[id]) continue;
+    lyr.eachLayer(layer => {
+      try {
+        const geom = layer.feature?.geometry;
+        if (!geom) return;
+        const props = layer.feature?.properties || {};
+        const nivel = props.nivel || props.nivel_riesgo || props.zona || props.grado || null;
+        // pip (point-in-polygon) básico para polígonos
+        if (geom.type === 'Polygon' && L.polygon(geom.coordinates[0].map(c=>[c[1],c[0]])).getBounds().contains(latlng)) {
+          riesgos.push({ capa: GEO_DATA[id]?.label || id, nivel, props });
+        }
+        if (geom.type === 'LineString') {
+          // No aplica PIP pero reportamos si hay líneas activas
+        }
+      } catch(e) {}
+    });
+  }
+
+  // Revisa MIS_CAPAS activas
+  for (const [id, entry] of Object.entries(miCapasMap)) {
+    if (!entry.on) continue;
+    entry.layer.eachLayer(layer => {
+      try {
+        const geom = layer.feature?.geometry;
+        const props = layer.feature?.properties || {};
+        const nivel = props.nivel_riesgo || props.nivel || props.riesgo || null;
+        const cap = MIS_CAPAS_INDEX[id];
+        if (geom?.type === 'Polygon') {
+          const coords = geom.coordinates[0].map(c => [c[1], c[0]]);
+          if (L.polygon(coords).getBounds().contains(latlng)) {
+            riesgos.push({ capa: cap?.nombre || id, nivel, props });
+          }
+        }
+      } catch(e) {}
+    });
+  }
+
+  // Revisa capas de usuario (ulMap)
+  for (const [id, u] of Object.entries(ulMap)) {
+    if (!u.vis) continue;
+    u.lyr.eachLayer(layer => {
+      try {
+        const geom = layer.feature?.geometry;
+        const props = layer.feature?.properties || {};
+        const nivel = props.nivel_riesgo || props.nivel || props.riesgo || null;
+        if (geom?.type === 'Polygon') {
+          const coords = geom.coordinates[0].map(c => [c[1], c[0]]);
+          if (L.polygon(coords).getBounds().contains(latlng)) {
+            riesgos.push({ capa: u.name, nivel, props });
+          }
+        }
+      } catch(e) {}
+    });
+  }
+
+  return riesgos;
+}
+
+const NIVEL_COLORS = {
+  'Muy alto': '#dc2626', 'Muy Alto': '#dc2626',
+  'Alto': '#f97316', 'ALTO': '#f97316',
+  'Medio': '#f59e0b', 'MEDIO': '#f59e0b',
+  'Bajo': '#22c55e', 'BAJO': '#22c55e',
+  'B': '#22c55e',
+};
+const NIVEL_LABELS = {
+  'Muy alto':'lma','Muy Alto':'lma','Alto':'la','ALTO':'la',
+  'Medio':'lm','MEDIO':'lm','Bajo':'lb','BAJO':'lb','B':'lb'
+};
+
+function actualizarPanelPunto(latlng, riesgos) {
+  const rph = document.querySelector('.rph');
+  const rpb = document.querySelector('.rpb');
+
+  // Actualizar encabezado con coordenadas
+  rph.innerHTML = `
+    <h2>Análisis del punto seleccionado</h2>
+    <p>${latlng.lat.toFixed(5)}° N · ${Math.abs(latlng.lng).toFixed(5)}° O</p>
+  `;
+
+  if (!riesgos.length) {
+    rpb.innerHTML = `
+      <div style="text-align:center;padding:32px 16px;color:var(--t3)">
+        <div style="font-size:28px;margin-bottom:10px">📍</div>
+        <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px">Sin capas activas en este punto</div>
+        <div style="font-size:11px">Activa capas en el panel izquierdo<br>y haz clic sobre una zona del mapa</div>
+      </div>
+    `;
+    return;
+  }
+
+  // Determinar nivel máximo
+  const nivelPesos = {'Muy alto':4,'Muy Alto':4,'Alto':3,'ALTO':3,'Medio':2,'MEDIO':2,'Bajo':1,'BAJO':1,'B':1};
+  let maxNivel = null, maxPeso = 0;
+  riesgos.forEach(r => {
+    const p = nivelPesos[r.nivel] || 0;
+    if (p > maxPeso) { maxPeso = p; maxNivel = r.nivel; }
+  });
+
+  const colorMax = NIVEL_COLORS[maxNivel] || '#64748b';
+  const labelMax = maxNivel ? maxNivel.toUpperCase() : 'INFORMACIÓN';
+  const pct = { 4: 90, 3: 68, 2: 45, 1: 25 }[maxPeso] || 30;
+
+  rpb.innerHTML = `
+    <div class="rmeter" style="border-color:${colorMax}40">
+      <div class="rml">Nivel de riesgo en este punto</div>
+      <div class="rmt" style="color:${colorMax};font-size:22px">${labelMax}</div>
+      <div class="rms">${riesgos.length} capa${riesgos.length>1?'s':''} activa${riesgos.length>1?'s':''} · ${latlng.lat.toFixed(4)}° N ${Math.abs(latlng.lng).toFixed(4)}° O</div>
+      <div class="rmbar-w"><div class="rmbar" style="width:${pct}%;background:${colorMax}"></div></div>
+      <div class="rmticks"><span>Bajo</span><span>Medio</span><span>Alto</span><span>Muy alto</span></div>
+    </div>
+
+    <div class="slabel" style="margin-top:8px">Capas con información en este punto</div>
+    ${riesgos.map(r => {
+      const nv = r.nivel || '—';
+      const col = NIVEL_COLORS[nv] || '#64748b';
+      const lbl = NIVEL_LABELS[nv] || '';
+      const props = Object.entries(r.props)
+        .filter(([,v]) => v !== null && v !== '')
+        .slice(0, 6)
+        .map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`)
+        .join('');
+      return `
+        <div class="rcard" style="cursor:default">
+          <div class="ricon" style="background:${col}18;font-size:13px">📌</div>
+          <div class="rcinfo">
+            <div class="rcname">${r.capa}</div>
+            ${props ? `<table class="itab" style="margin-top:4px">${props}</table>` : ''}
+          </div>
+          ${nv !== '—' ? `<div class="rlevel ${lbl}" style="background:${col}18;color:${col};border-color:${col}50">${nv}</div>` : ''}
+        </div>
+      `;
+    }).join('')}
+
+    <div style="margin-top:12px;text-align:center">
+      <button onclick="resetPanel()" style="background:var(--bg3);border:1px solid var(--bdr);color:var(--t3);padding:5px 14px;border-radius:5px;font-size:10px;cursor:pointer">↩ Volver al resumen general</button>
+    </div>
+  `;
+}
+
+function resetPanel() {
+  document.querySelector('.rph').innerHTML = `<h2>Panel de análisis</h2><p>Pabellón de Arteaga · Ags. · 2024</p>`;
+  // Restaurar contenido original — recarga la página
+  location.reload();
+}
+
 map.on('click',async e=>{
   if(mOn) return;
+
+  // ── Panel derecho reactivo ──
+  const riesgos = calcRiesgoEnPunto(e.latlng);
+  actualizarPanelPunto(e.latlng, riesgos);
+
   const activeIds=Object.keys(WMS).filter(id=>wmsOn[id]);
   if(!activeIds.length) return;
   showLd();
@@ -1542,7 +1773,27 @@ new Chart(document.getElementById('pChart'),{type:'bar',data:{labels:['E','F','M
 new Chart(document.getElementById('rChart'),{type:'doughnut',data:{labels:['Inundación','Incendio','Heladas','Erosión','Sequía','Sismos'],datasets:[{data:[28,22,20,15,10,5],backgroundColor:['#2563eb','#dc2626','#7c3aed','#ea580c','#d97706','#0f766e'],borderWidth:2,borderColor:'#fff'}]},options:{plugins:{legend:{display:true,position:'right',labels:{color:'#475569',font:{size:9},boxWidth:9,padding:6}}}}});
 
 // Start
-window.onload=()=>{showLd();initWMSBadges();validateMiCapasBindings();setTimeout(hideLd,1800);};
+window.onload = () => {
+  showLd();
+  initWMSBadges();
+  validateMiCapasBindings();
+
+  // ── Botones de descarga automáticos ──
+  document.querySelectorAll('[onclick*="toggleGJ("]').forEach(el => {
+    const m = (el.getAttribute('onclick') || '').match(/toggleGJ\('([^']+)'/);
+    if(!m) return;
+    const id = m[1];
+    if(!GEO_DATA[id]) return;
+    const btn = document.createElement('button');
+    btn.title = 'Descargar GeoJSON';
+    btn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;opacity:.6;flex-shrink:0';
+    btn.textContent = '⬇';
+    btn.onclick = e => { e.stopPropagation(); descargarCapa(id); };
+    el.appendChild(btn);
+  });
+
+  setTimeout(hideLd, 1800);
+};
 </script>
 </body>
 </html>
