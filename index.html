@@ -204,14 +204,14 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
         <div class="cat-hdr" onclick="toggleCat('cat-hidro')">
           <span class="cat-icon">🌊</span>
           <span class="cat-title">Hidrometeorológicos</span>
-          <span class="cat-count">6</span>
+          <span class="cat-count">9</span>
           <span class="cat-arrow">▶</span>
         </div>
         <div class="cat-body">
           <!-- Hidrografía: ríos, arroyos, cuerpos de agua — peligro origen hídrico -->
-          <div class="litem" id="li-inegi-hid" onclick="toggleMiCapa('inegi-hid',this)">
+          <div class="litem" id="li-inegi-hid" onclick="toggleWMS('inegi-hid',this)">
             <div class="ldot" style="background:#0ea5e9"></div>
-            <div class="linfo"><div class="lname">Red hidrográfica y canales</div><div class="lsub">canal.json · cauces y canales locales</div></div>
+            <div class="linfo"><div class="lname">Hidrografía INEGI</div><div class="lsub">Corrientes, cuerpos de agua y presas · API oficial</div></div>
             <span class="wbadge wgeo" id="st-inegi-hid">GEO</span><div class="ltog"></div>
           </div>
           <!-- Cuerpos de agua propios del municipio (presas, bordos) -->
@@ -237,6 +237,21 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
             <div class="linfo"><div class="lname">Sequías · estrés hídrico</div><div class="lsub">CENAPRED · Monitor CONAGUA · Grado D2</div></div>
             <span class="wbadge wgeo" id="st-cnp-seq">GEO</span><div class="ltog"></div>
           </div>
+          <div class="litem" id="li-inegi-hidro-div" onclick="toggleWMS('inegi-hidro-div',this)">
+            <div class="ldot" style="background:#0284c7"></div>
+            <div class="linfo"><div class="lname">División hidrológica</div><div class="lsub">Cuencas y regiones hidrológicas · API oficial INEGI</div></div>
+            <span class="wbadge wgeo" id="st-inegi-hidro-div">GEO</span><div class="ltog"></div>
+          </div>
+          <div class="litem" id="li-inegi-clima-prec" onclick="toggleWMS('inegi-clima-prec',this)">
+            <div class="ldot" style="background:#2563eb"></div>
+            <div class="linfo"><div class="lname">Precipitación media anual</div><div class="lsub">Climatología oficial INEGI</div></div>
+            <span class="wbadge wgeo" id="st-inegi-clima-prec">GEO</span><div class="ltog"></div>
+          </div>
+          <div class="litem" id="li-inegi-clima-temp" onclick="toggleWMS('inegi-clima-temp',this)">
+            <div class="ldot" style="background:#ef4444"></div>
+            <div class="linfo"><div class="lname">Temperatura media anual</div><div class="lsub">Climatología oficial INEGI</div></div>
+            <span class="wbadge wgeo" id="st-inegi-clima-temp">GEO</span><div class="ltog"></div>
+          </div>
           <div class="litem" id="li-cnp-hela" onclick="toggleGJ('cnp-hela',this)">
             <div class="ldot" style="background:#818cf8"></div>
             <div class="linfo"><div class="lname">Heladas y bajas temperaturas</div><div class="lsub">SMN / CENAPRED · 20–28 días/año</div></div>
@@ -250,7 +265,7 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
         <div class="cat-hdr" onclick="toggleCat('cat-geo')">
           <span class="cat-icon">🪨</span>
           <span class="cat-title">Geológicos</span>
-          <span class="cat-count">5</span>
+          <span class="cat-count">7</span>
           <span class="cat-arrow">▶</span>
         </div>
         <div class="cat-body">
@@ -279,10 +294,20 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
             <span class="wbadge wgeo" id="st-cnb-er">GEO</span><div class="ltog"></div>
           </div>
           <!-- Curvas de nivel: base geomorfológica -->
-          <div class="litem" id="li-inegi-topo" onclick="toggleMiCapa('inegi-topo',this)">
+          <div class="litem" id="li-inegi-topo" onclick="toggleWMS('inegi-topo',this)">
             <div class="ldot" style="background:#d97706"></div>
-            <div class="linfo"><div class="lname">Curvas de nivel · relieve</div><div class="lsub">curva_nivel50_l_FeaturesToJS.geojson · altimetría</div></div>
+            <div class="linfo"><div class="lname">Curvas de nivel · relieve</div><div class="lsub">API oficial INEGI · curvas de nivel</div></div>
             <span class="wbadge wgeo" id="st-inegi-topo">GEO</span><div class="ltog"></div>
+          </div>
+          <div class="litem" id="li-inegi-geol-fallas" onclick="toggleWMS('inegi-geol-fallas',this)">
+            <div class="ldot" style="background:#991b1b"></div>
+            <div class="linfo"><div class="lname">Fallas y fracturas</div><div class="lsub">Geología oficial INEGI</div></div>
+            <span class="wbadge wgeo" id="st-inegi-geol-fallas">GEO</span><div class="ltog"></div>
+          </div>
+          <div class="litem" id="li-inegi-topoformas" onclick="toggleWMS('inegi-topoformas',this)">
+            <div class="ldot" style="background:#92400e"></div>
+            <div class="linfo"><div class="lname">Sistemas de topoformas</div><div class="lsub">Fisiografía oficial INEGI</div></div>
+            <span class="wbadge wgeo" id="st-inegi-topoformas">GEO</span><div class="ltog"></div>
           </div>
         </div>
       </div>
@@ -297,9 +322,9 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
         </div>
         <div class="cat-body">
           <!-- Infraestructura vial -->
-          <div class="litem" id="li-inegi-cam" onclick="toggleMiCapa('inegi-cam',this)">
+          <div class="litem" id="li-inegi-cam" onclick="toggleWMS('inegi-cam',this)">
             <div class="ldot" style="background:#475569"></div>
-            <div class="linfo"><div class="lname">Calles y red vial</div><div class="lsub">calles.json · ejes viales y calles</div></div>
+            <div class="linfo"><div class="lname">Vías de comunicación INEGI</div><div class="lsub">Carreteras, terracerías, caminos rurales y vías férreas</div></div>
             <span class="wbadge wgeo" id="st-inegi-cam">GEO</span><div class="ltog"></div>
           </div>
           <div class="litem" id="li-carretera20" onclick="toggleMiCapa('carretera20',this)">
@@ -325,9 +350,9 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
             <div class="ltog"></div>
           </div>
           <!-- Uso de suelo: resultado de actividades humanas -->
-          <div class="litem" id="li-inegi-uso" onclick="toggleMiCapa('inegi-uso',this)">
+          <div class="litem" id="li-inegi-uso" onclick="toggleWMS('inegi-uso',this)">
             <div class="ldot" style="background:#16a34a"></div>
-            <div class="linfo"><div class="lname">Colonias y asentamientos</div><div class="lsub">colonias.json · polígonos urbanos</div></div>
+            <div class="linfo"><div class="lname">Uso de suelo y vegetación</div><div class="lsub">API oficial INEGI</div></div>
             <span class="wbadge wgeo" id="st-inegi-uso">GEO</span><div class="ltog"></div>
           </div>
           <!-- Áreas protegidas: ordenamiento territorial antrópico -->
@@ -366,15 +391,15 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
             <span class="wbadge wwarn" id="st-servicios">GEO</span><div class="ltog"></div>
           </div>
           <!-- Población en zonas de peligro: densidad expuesta -->
-          <div class="litem" id="li-inegi-est" onclick="toggleMiCapa('inegi-est',this)">
+          <div class="litem" id="li-inegi-est" onclick="toggleWMS('inegi-est',this)">
             <div class="ldot" style="background:#64748b"></div>
-            <div class="linfo"><div class="lname">Gasolineras y estaciones</div><div class="lsub">gasolinerias.json · combustible y servicio</div></div>
+            <div class="linfo"><div class="lname">AGEB urbanas</div><div class="lsub">Exposición territorial y análisis censal · API oficial INEGI</div></div>
             <span class="wbadge wgeo" id="st-inegi-est">GEO</span><div class="ltog"></div>
           </div>
           <!-- Manzanas urbanas: unidad mínima de exposición -->
-          <div class="litem" id="li-inegi-mun" onclick="toggleMiCapa('inegi-mun',this)">
+          <div class="litem" id="li-inegi-mun" onclick="toggleWMS('inegi-mun',this)">
             <div class="ldot" style="background:#2563eb"></div>
-            <div class="linfo"><div class="lname">Subestaciones eléctricas</div><div class="lsub">subestacionelectrica.json · infraestructura crítica</div></div>
+            <div class="linfo"><div class="lname">Límite municipal oficial</div><div class="lsub">División territorial · API oficial INEGI</div></div>
             <span class="wbadge wgeo" id="st-inegi-mun">GEO</span><div class="ltog"></div>
           </div>
         </div>
@@ -390,9 +415,9 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
         </div>
         <div class="cat-body">
           <!-- Población con menor capacidad de respuesta: adultos mayores, marginación -->
-          <div class="litem" id="li-inegi-loc" onclick="toggleMiCapa('inegi-loc',this)">
+          <div class="litem" id="li-inegi-loc" onclick="toggleWMS('inegi-loc',this)">
             <div class="ldot" style="background:#64748b"></div>
-            <div class="linfo"><div class="lname">Comercios y actividad económica</div><div class="lsub">comercios.json · unidades económicas</div></div>
+            <div class="linfo"><div class="lname">Colonias y vialidades urbanas</div><div class="lsub">Traza urbana oficial INEGI</div></div>
             <span class="wbadge wgeo" id="st-inegi-loc">GEO</span><div class="ltog"></div>
           </div>
           <!-- Vegetación y cobertura: aumenta vulnerabilidad a incendios y erosión -->
@@ -408,7 +433,7 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
             <span class="wbadge wgeo" id="st-erosion-vuln">GEO</span><div class="ltog"></div>
           </div>
           <!-- Uso de suelo deteriorado: proxy de vulnerabilidad física -->
-          <div class="litem" id="li-inegi-uso-vuln" onclick="toggleGJ('inegi-uso',this)">
+          <div class="litem" id="li-inegi-uso-vuln" onclick="toggleWMS('inegi-uso',this)">
             <div class="ldot" style="background:#16a34a"></div>
             <div class="linfo"><div class="lname">Cobertura suelo · cambio de uso</div><div class="lsub">INEGI Serie VII 2018 · 5 tipos de cobertura</div></div>
             <span class="wbadge wgeo" id="st-inegi-uso-vuln">GEO</span><div class="ltog"></div>
@@ -631,13 +656,8 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
 // Cada entrada tiene: id (para el toggle del sidebar), nombre, archivo, color
 // ============================================================
 const MIS_CAPAS = [
-  { id:'inegi-hid',  nombre:'Red hidrográfica y canales', archivo:'canal.json',                                  color:'#0ea5e9', weight:2.4, fillOpacity:0, radius:4 },
-  { id:'inegi-topo', nombre:'Curvas de nivel · relieve',  archivo:'capas/curva_nivel50_l_FeaturesToJS.geojson', color:'#d97706', weight:1.2, fillOpacity:0, radius:3 },
-  { id:'inegi-cam',  nombre:'Calles y red vial',          archivo:'calles.json',                                 color:'#475569', weight:2.1, fillOpacity:0, radius:4 },
-  { id:'inegi-uso',  nombre:'Colonias y asentamientos',   archivo:'colonias.json',                               color:'#16a34a', weight:1.4, fillOpacity:0.12, radius:4 },
-  { id:'inegi-est',  nombre:'Gasolineras y estaciones',   archivo:'gasolinerias.json',                           color:'#64748b', weight:1.5, fillOpacity:0.22, radius:5 },
-  { id:'inegi-mun',  nombre:'Subestaciones eléctricas',   archivo:'subestacionelectrica.json',                  color:'#2563eb', weight:1.3, fillOpacity:0.16, radius:4 },
-  { id:'inegi-loc',  nombre:'Comercios y actividad económica', archivo:'comercios.json',                         color:'#64748b', weight:1.2, fillOpacity:0.16, radius:4 },
+  // Activa aquí únicamente tus capas propias exportadas desde ArcGIS Pro.
+  // Las capas oficiales de INEGI ahora se cargan por WMS desde la API de INEGI.
 ];
 
 // ============================================================
@@ -666,6 +686,22 @@ map.on('mousemove',e=>{
 // Solución: tiles XYZ públicos de INEGI + datos GeoJSON embebidos
 // para las capas temáticas de CENAPRED y CONABIO.
 // ============================================================
+
+const WMS_URL = 'https://mapas.inegi.org.mx/geoserver/wms';
+const WMS = {
+  'inegi-mun':         { label:'Municipal',                     layers:['Municipal'],                                                       opacity:0.72 },
+  'inegi-est':         { label:'AGEB',                          layers:['AGEB'],                                                            opacity:0.70 },
+  'inegi-loc':         { label:'Colonias y vialidades',         layers:['Colonias','Vialidades'],                                           opacity:0.78 },
+  'inegi-hid':         { label:'Hidrografía',                   layers:['Corrientes de agua','Cuerpos de agua','Presas'],                   opacity:0.78 },
+  'inegi-cam':         { label:'Vías de comunicación',          layers:['Carreteras','Terracerías','Caminos rurales','Vías férreas'],       opacity:0.82 },
+  'inegi-topo':        { label:'Curvas de nivel',               layers:['Curvas de nivel'],                                                 opacity:0.82 },
+  'inegi-uso':         { label:'Uso del suelo y vegetación',    layers:['Uso del suelo y vegetación'],                                      opacity:0.52 },
+  'inegi-clima-prec':  { label:'Precipitación media anual',     layers:['Precipitación media anual'],                                       opacity:0.45 },
+  'inegi-clima-temp':  { label:'Temperatura media anual',       layers:['Temperatura media anual'],                                         opacity:0.45 },
+  'inegi-geol-fallas': { label:'Fallas y fracturas',            layers:['Fallas y fracturas'],                                              opacity:0.84 },
+  'inegi-hidro-div':   { label:'División hidrológica',          layers:['División hidrológica'],                                            opacity:0.64 },
+  'inegi-topoformas':  { label:'Sistemas de topoformas',        layers:['Sistemas de Topoformas'],                                          opacity:0.62 }
+};
 
 // ── TILES XYZ DE INEGI (funcionan sin CORS porque son imágenes, no datos) ──
 // Estos sí se cargan desde cualquier dominio público.
@@ -919,9 +955,38 @@ function buildGeoLayer(id){
   });
 }
 
-// Alias para compatibilidad con código antiguo
+// Capas WMS oficiales INEGI
 const wmsL={}, wmsOn={};
-function toggleWMS(id,el){ toggleGJ(id,el); }
+
+function buildWMSLayer(id){
+  const def=WMS[id]; if(!def) return;
+  wmsL[id]=L.tileLayer.wms(WMS_URL,{
+    layers:def.layers.map(name=>`Sitio_Inegi:${name}`).join(','),
+    format:'image/png',
+    transparent:true,
+    version:'1.1.1',
+    styles:'',
+    tiled:true,
+    opacity:def.opacity??0.75,
+    uppercase:true
+  });
+}
+
+function toggleWMS(id,el){
+  const tog=el.querySelector('.ltog');
+  const st=document.getElementById('st-'+id);
+  if(wmsOn[id]){
+    map.removeLayer(wmsL[id]);
+    tog.classList.remove('on'); el.classList.remove('on'); wmsOn[id]=false;
+    if(st){st.textContent='API';st.className='wbadge wgeo';}
+    return;
+  }
+  if(!wmsL[id]) buildWMSLayer(id);
+  if(!wmsL[id]) return;
+  wmsL[id].addTo(map);
+  tog.classList.add('on'); el.classList.add('on'); wmsOn[id]=true;
+  if(st){st.textContent='✓';st.className='wbadge wok';}
+}
 
 // ============================================================
 // LOCAL LAYERS
@@ -1205,11 +1270,12 @@ function showToast(msg,ms=4000){const t=document.getElementById('toast');t.textC
 // ============================================================
 // INIT WMS BADGES
 // ============================================================
-setTimeout(()=>{
-  Object.keys(WMS).forEach(id=>{const st=document.getElementById('st-'+id);if(st){st.textContent='WMS';st.className='wbadge wwarn';}});
-  const el=document.getElementById('li-inegi-mun'),tog=el.querySelector('.ltog'),st=document.getElementById('st-inegi-mun');
-  addWMSLayer('inegi-mun',el,tog,st);
-},600);
+function initWMSBadges(){
+  Object.keys(WMS).forEach(id=>{
+    const st=document.getElementById('st-'+id);
+    if(st){st.textContent='API';st.className='wbadge wgeo';}
+  });
+}
 
 // ============================================================
 // EXPORT
@@ -1254,7 +1320,7 @@ new Chart(document.getElementById('pChart'),{type:'bar',data:{labels:['E','F','M
 new Chart(document.getElementById('rChart'),{type:'doughnut',data:{labels:['Inundación','Incendio','Heladas','Erosión','Sequía','Sismos'],datasets:[{data:[28,22,20,15,10,5],backgroundColor:['#2563eb','#dc2626','#7c3aed','#ea580c','#d97706','#0f766e'],borderWidth:2,borderColor:'#fff'}]},options:{plugins:{legend:{display:true,position:'right',labels:{color:'#475569',font:{size:9},boxWidth:9,padding:6}}}}});
 
 // Start
-window.onload=()=>{showLd();setTimeout(hideLd,1800);};
+window.onload=()=>{showLd();initWMSBadges();setTimeout(hideLd,1800);};
 </script>
 </body>
 </html>
