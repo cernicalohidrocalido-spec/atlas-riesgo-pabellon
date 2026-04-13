@@ -234,13 +234,13 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
           </div>
           <div class="litem" id="li-cnp-inund" onclick="toggleGJ('cnp-inund',this)">
             <div class="ldot" style="background:#1e40af"></div>
-            <div class="linfo"><div class="lname">Peligro por inundación</div><div class="lsub">CENAPRED · ANR 2020 · 4 zonas</div></div>
+            <div class="linfo"><div class="lname">Canales y corrientes locales</div><div class="lsub">Archivo local real · canal.json</div></div>
             <span class="wbadge wgeo" id="st-cnp-inund">GEO</span><div class="ltog"></div>
           </div>
           <!-- Sequías y heladas: fenómenos hidrometeorológicos -->
           <div class="litem" id="li-cnp-seq" onclick="toggleGJ('cnp-seq',this)">
             <div class="ldot" style="background:#d97706"></div>
-            <div class="linfo"><div class="lname">Sequías · estrés hídrico</div><div class="lsub">CENAPRED · Monitor CONAGUA · Grado D2</div></div>
+            <div class="linfo"><div class="lname">Cuerpos de agua (inventario)</div><div class="lsub">Archivo local real · Cuerpo_agua.geojson</div></div>
             <span class="wbadge wgeo" id="st-cnp-seq">GEO</span><div class="ltog"></div>
           </div>
           <div class="litem" id="li-inegi-hidro-div" onclick="toggleWMS('inegi-hidro-div',this)">
@@ -260,7 +260,7 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
           </div>
           <div class="litem" id="li-cnp-hela" onclick="toggleGJ('cnp-hela',this)">
             <div class="ldot" style="background:#818cf8"></div>
-            <div class="linfo"><div class="lname">Heladas y bajas temperaturas</div><div class="lsub">SMN / CENAPRED · 20–28 días/año</div></div>
+            <div class="linfo"><div class="lname">Curvas de nivel (proxy heladas)</div><div class="lsub">Archivo local real · curva_nivel50_l_FeaturesToJS.geojson</div></div>
             <span class="wbadge wgeo" id="st-cnp-hela">GEO</span><div class="ltog"></div>
           </div>
         </div>
@@ -284,7 +284,7 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
           <!-- Sismicidad regional -->
           <div class="litem" id="li-cnp-sism" onclick="toggleGJ('cnp-sism',this)">
             <div class="ldot" style="background:#7c3aed"></div>
-            <div class="linfo"><div class="lname">Regionalización sísmica</div><div class="lsub">CENAPRED · Zona B · CFE 2015 · 0.16–0.32g</div></div>
+            <div class="linfo"><div class="lname">Predios en zona de falla</div><div class="lsub">Archivo local real · prediosfallas.json</div></div>
             <span class="wbadge wgeo" id="st-cnp-sism">GEO</span><div class="ltog"></div>
           </div>
           <!-- Zonas sísmicas municipales levantadas por PCP -->
@@ -296,7 +296,7 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
           <!-- Erosión: proceso geomorfológico -->
           <div class="litem" id="li-cnb-er" onclick="toggleGJ('cnb-er',this)">
             <div class="ldot" style="background:#f97316"></div>
-            <div class="linfo"><div class="lname">Erosión potencial de suelos</div><div class="lsub">CONABIO 2017 · Pérdida ton/ha·año</div></div>
+            <div class="linfo"><div class="lname">Curvas de nivel 50 m</div><div class="lsub">Archivo local real · curva_nivel50_l_FeaturesToJS.geojson</div></div>
             <span class="wbadge wgeo" id="st-cnb-er">GEO</span><div class="ltog"></div>
           </div>
           <!-- Curvas de nivel: base geomorfológica -->
@@ -364,7 +364,7 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
           <!-- Áreas protegidas: ordenamiento territorial antrópico -->
           <div class="litem" id="li-cnb-anp" onclick="toggleGJ('cnb-anp',this)">
             <div class="ldot" style="background:#059669"></div>
-            <div class="linfo"><div class="lname">Áreas Naturales Protegidas</div><div class="lsub">CONANP 2022 · Sierra Fría · DOF 2002</div></div>
+            <div class="linfo"><div class="lname">Límite municipal (ordenamiento)</div><div class="lsub">Archivo local real · LimitePabellon.geojson</div></div>
             <span class="wbadge wgeo" id="st-cnb-anp">GEO</span><div class="ltog"></div>
           </div>
         </div>
@@ -429,13 +429,13 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
           <!-- Vegetación y cobertura: aumenta vulnerabilidad a incendios y erosión -->
           <div class="litem" id="li-cnb-veg" onclick="toggleGJ('cnb-veg',this)">
             <div class="ldot" style="background:#22c55e"></div>
-            <div class="linfo"><div class="lname">Vegetación potencial</div><div class="lsub">CONABIO · cobertura natural del municipio</div></div>
+            <div class="linfo"><div class="lname">Colonias urbanas</div><div class="lsub">Archivo local real · colonias.json</div></div>
             <span class="wbadge wgeo" id="st-cnb-veg">GEO</span><div class="ltog"></div>
           </div>
           <!-- Erosión activa: terreno degradado = mayor vulnerabilidad a deslaves -->
           <div class="litem" id="li-erosion-vuln" onclick="toggleGJ('cnb-er',this)">
             <div class="ldot" style="background:#f97316"></div>
-            <div class="linfo"><div class="lname">Grado de erosión · degradación</div><div class="lsub">CONABIO 2017 · Alto / Medio / Bajo</div></div>
+            <div class="linfo"><div class="lname">Curvas de nivel 50 m</div><div class="lsub">Archivo local real · curva_nivel50_l_FeaturesToJS.geojson</div></div>
             <span class="wbadge wgeo" id="st-erosion-vuln">GEO</span><div class="ltog"></div>
           </div>
           <!-- Uso de suelo deteriorado: proxy de vulnerabilidad física -->
@@ -668,6 +668,13 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
 const MIS_CAPAS = [
   { id:'limite',       nombre:'Límite municipal',          archivo:'capas/LimitePabellon.geojson', color:'#1d4ed8', weight:2.4, fillOpacity:0.04, radius:4 },
   { id:'cuerpos-agua',  nombre:'Cuerpos de agua',            archivo:'capas/Cuerpo_agua.geojson',      color:'#0369a1', weight:1.4, fillOpacity:0.24, radius:4 },
+  { id:'cnp-inund',     nombre:'Canales y corrientes locales', archivo:'capas/canal.json',              color:'#1e40af', weight:2.0, fillOpacity:0.00, radius:4 },
+  { id:'cnp-seq',       nombre:'Cuerpos de agua (inventario)', archivo:'capas/Cuerpo_agua.geojson',     color:'#d97706', weight:1.2, fillOpacity:0.10, radius:4 },
+  { id:'cnp-hela',      nombre:'Curvas de nivel (proxy heladas)', archivo:'capas/curva_nivel50_l_FeaturesToJS.geojson', color:'#818cf8', weight:1.2, fillOpacity:0.00, radius:3 },
+  { id:'cnp-sism',      nombre:'Predios en zona de falla',      archivo:'capas/prediosfallas.json',      color:'#7c3aed', weight:1.2, fillOpacity:0.10, radius:4 },
+  { id:'cnb-er',        nombre:'Curvas de nivel 50 m',          archivo:'capas/curva_nivel50_l_FeaturesToJS.geojson', color:'#f97316', weight:1.2, fillOpacity:0.00, radius:3 },
+  { id:'cnb-anp',       nombre:'Límite municipal (ordenamiento)', archivo:'capas/LimitePabellon.geojson', color:'#059669', weight:2.2, fillOpacity:0.02, radius:4 },
+  { id:'cnb-veg',       nombre:'Colonias urbanas',              archivo:'capas/colonias.json',           color:'#22c55e', weight:1.2, fillOpacity:0.12, radius:4 },
   { id:'gasoducto',     nombre:'Gasoducto',                  archivo:'capas/Gasoducto.geojson',        color:'#f59e0b', weight:2.4, fillOpacity:0,    radius:4 },
   { id:'servicios',     nombre:'Servicios públicos',         archivo:'capas/servicios_p.json',         color:'#0e7490', weight:1.5, fillOpacity:0.16, radius:5 },
   { id:'predios-fallas',nombre:'Predios en zona de falla',   archivo:'capas/prediosfallas.json',       color:'#dc2626', weight:1.2, fillOpacity:0.12, radius:4 },
@@ -762,181 +769,9 @@ const INEGI_TILES = {
   },
 };
 
-// ── DATOS GeoJSON EMBEBIDOS — capas temáticas de riesgo para Aguascalientes ──
-// Fuente: CENAPRED ANR 2020, CONABIO 2017, CFE 2015
-// Coordenadas reales del municipio 01006 — Pabellón de Arteaga
-const GEO_DATA = {
-
-  'cnp-inund': {
-    label:'Peligro por inundación · CENAPRED', color:'#1d4ed8',
-    data: {type:'FeatureCollection', features:[
-      {type:'Feature',properties:{nombre:'Zona inundable alta — Arroyo El Rayo',nivel:'Alto',fuente:'CENAPRED ANR 2020',municipio:'Pabellón de Arteaga'},
-       geometry:{type:'Polygon',coordinates:[[[-102.345,22.162],[-102.320,22.168],[-102.312,22.155],[-102.330,22.148],[-102.345,22.162]]]}},
-      {type:'Feature',properties:{nombre:'Zona inundable muy alta — Arroyo San Agustín',nivel:'Muy alto',fuente:'CENAPRED ANR 2020',municipio:'Pabellón de Arteaga'},
-       geometry:{type:'Polygon',coordinates:[[[-102.382,22.183],[-102.358,22.192],[-102.348,22.175],[-102.368,22.165],[-102.382,22.183]]]}},
-      {type:'Feature',properties:{nombre:'Encharcamiento norte — Col. Progreso',nivel:'Medio',fuente:'CENAPRED ANR 2020'},
-       geometry:{type:'Polygon',coordinates:[[[-102.295,22.118],[-102.272,22.128],[-102.262,22.112],[-102.280,22.102],[-102.295,22.118]]]}},
-      {type:'Feature',properties:{nombre:'Zona inundable media — Las Ánimas',nivel:'Medio',fuente:'CENAPRED ANR 2020'},
-       geometry:{type:'Polygon',coordinates:[[[-102.298,22.196],[-102.280,22.202],[-102.273,22.192],[-102.290,22.185],[-102.298,22.196]]]}}
-    ]}
-  },
-
-  'cnp-sism': {
-    label:'Regionalización sísmica · CFE 2015', color:'#7c3aed',
-    data: {type:'FeatureCollection', features:[
-      {type:'Feature',properties:{zona:'B',descripcion:'Zona sísmica B — Aguascalientes',norma:'CFE 2015',aceleracion:'0.16g — 0.32g',fuente:'CENAPRED'},
-       geometry:{type:'Polygon',coordinates:[[[-102.45,22.05],[-102.15,22.05],[-102.15,22.25],[-102.45,22.25],[-102.45,22.05]]]}}
-    ]}
-  },
-
-  'cnp-seq': {
-    label:'Sequías · estrés hídrico · CONAGUA', color:'#d97706',
-    data: {type:'FeatureCollection', features:[
-      {type:'Feature',properties:{grado:'Severo (D2)',periodo:'2015–2024',frecuencia:'35% de los meses',fuente:'Monitor de Sequía CONAGUA',municipio:'Pabellón de Arteaga'},
-       geometry:{type:'Polygon',coordinates:[[[-102.45,22.05],[-102.15,22.05],[-102.15,22.25],[-102.45,22.25],[-102.45,22.05]]]}}
-    ]}
-  },
-
-  'cnp-hela': {
-    label:'Heladas · frecuencia anual · SMN', color:'#818cf8',
-    data: {type:'FeatureCollection', features:[
-      {type:'Feature',properties:{eventos_anuales:'20–28 días',periodo_riesgo:'Nov–Feb',cultivos_afectados:'Maíz, frijol, chile',fuente:'SMN / CENAPRED',municipio:'Pabellón de Arteaga'},
-       geometry:{type:'Polygon',coordinates:[[[-102.45,22.05],[-102.15,22.05],[-102.15,22.25],[-102.45,22.25],[-102.45,22.05]]]}}
-    ]}
-  },
-
-  'cnb-veg': {
-    label:'Vegetación potencial · CONABIO', color:'#22c55e',
-    data: {type:'FeatureCollection', features:[
-      {type:'Feature',properties:{tipo:'Matorral xerófilo',cobertura:'~45%',fuente:'CONABIO USV Serie VII'},
-       geometry:{type:'Polygon',coordinates:[[[-102.44,22.06],[-102.30,22.06],[-102.30,22.14],[-102.44,22.14],[-102.44,22.06]]]}},
-      {type:'Feature',properties:{tipo:'Pastizal inducido',cobertura:'~30%',fuente:'CONABIO USV Serie VII'},
-       geometry:{type:'Polygon',coordinates:[[[-102.30,22.06],[-102.16,22.06],[-102.16,22.14],[-102.30,22.14],[-102.30,22.06]]]}},
-      {type:'Feature',properties:{tipo:'Agrícola de riego',cobertura:'~20%',fuente:'CONABIO USV Serie VII'},
-       geometry:{type:'Polygon',coordinates:[[[-102.38,22.14],[-102.20,22.14],[-102.20,22.24],[-102.38,22.24],[-102.38,22.14]]]}}
-    ]}
-  },
-
-  'cnb-anp': {
-    label:'Áreas Naturales Protegidas · CONANP', color:'#059669',
-    data: {type:'FeatureCollection', features:[
-      {type:'Feature',properties:{nombre:'Área de Protección de Flora y Fauna Sierra Fría',decreto:'DOF 2002',superficie_ha:124252,municipios:'Aguascalientes, San José de Gracia',fuente:'CONANP 2022'},
-       geometry:{type:'Polygon',coordinates:[[[-102.44,22.18],[-102.35,22.18],[-102.35,22.25],[-102.44,22.25],[-102.44,22.18]]]}}
-    ]}
-  },
-
-  'cnb-er': {
-    label:'Erosión potencial de suelos · CONABIO', color:'#f97316',
-    data: {type:'FeatureCollection', features:[
-      {type:'Feature',properties:{nivel:'Alto',perdida_ton_ha_año:'>10',fuente:'CONABIO 2017',municipio:'Pabellón de Arteaga'},
-       geometry:{type:'Polygon',coordinates:[[[-102.44,22.05],[-102.32,22.05],[-102.32,22.13],[-102.44,22.13],[-102.44,22.05]]]}},
-      {type:'Feature',properties:{nivel:'Medio',perdida_ton_ha_año:'5–10',fuente:'CONABIO 2017'},
-       geometry:{type:'Polygon',coordinates:[[[-102.32,22.05],[-102.16,22.05],[-102.16,22.15],[-102.32,22.15],[-102.32,22.05]]]}},
-      {type:'Feature',properties:{nivel:'Bajo',perdida_ton_ha_año:'<5',fuente:'CONABIO 2017'},
-       geometry:{type:'Polygon',coordinates:[[[-102.38,22.15],[-102.16,22.15],[-102.16,22.25],[-102.38,22.25],[-102.38,22.15]]]}}
-    ]}
-  },
-
-  'inegi-mun': {
-    label:'Límites municipales · INEGI MGN 2020', color:'#2563eb',
-    data: {type:'FeatureCollection', features:[
-      {type:'Feature',properties:{municipio:'Pabellón de Arteaga',clave:'01006',estado:'Aguascalientes',clave_estado:'01',superficie_km2:276.3,fuente:'INEGI MGN 2020'},
-       geometry:{type:'Polygon',coordinates:[[[-102.42,22.23],[-102.35,22.24],[-102.25,22.22],[-102.18,22.18],[-102.17,22.12],[-102.20,22.07],[-102.28,22.05],[-102.36,22.06],[-102.42,22.10],[-102.44,22.17],[-102.42,22.23]]]}}
-    ]}
-  },
-
-  'inegi-est': {
-    label:'Densidad de población · INEGI Censo 2020', color:'#64748b',
-    data: {type:'FeatureCollection', features:[
-      {type:'Feature',properties:{nombre:'AGEB Norte',pob_total:4821,hombres:2390,mujeres:2431,viviendas:1245,densidad:'alta',fuente:'INEGI Censo 2020'},
-       geometry:{type:'Polygon',coordinates:[[[-102.32,22.17],[-102.28,22.17],[-102.28,22.21],[-102.32,22.21],[-102.32,22.17]]]}},
-      {type:'Feature',properties:{nombre:'AGEB Centro',pob_total:6103,hombres:2980,mujeres:3123,viviendas:1580,densidad:'muy alta',fuente:'INEGI Censo 2020'},
-       geometry:{type:'Polygon',coordinates:[[[-102.32,22.13],[-102.28,22.13],[-102.28,22.17],[-102.32,22.17],[-102.32,22.13]]]}},
-      {type:'Feature',properties:{nombre:'AGEB Sur',pob_total:3214,hombres:1590,mujeres:1624,viviendas:830,densidad:'media',fuente:'INEGI Censo 2020'},
-       geometry:{type:'Polygon',coordinates:[[[-102.32,22.09],[-102.28,22.09],[-102.28,22.13],[-102.32,22.13],[-102.32,22.09]]]}},
-      {type:'Feature',properties:{nombre:'AGEB Rural Oriente',pob_total:1870,hombres:910,mujeres:960,viviendas:470,densidad:'baja',fuente:'INEGI Censo 2020'},
-       geometry:{type:'Polygon',coordinates:[[[-102.28,22.09],[-102.18,22.09],[-102.18,22.21],[-102.28,22.21],[-102.28,22.09]]]}},
-      {type:'Feature',properties:{nombre:'AGEB Rural Poniente',pob_total:1245,hombres:610,mujeres:635,viviendas:310,densidad:'baja',fuente:'INEGI Censo 2020'},
-       geometry:{type:'Polygon',coordinates:[[[-102.44,22.09],[-102.32,22.09],[-102.32,22.21],[-102.44,22.21],[-102.44,22.09]]]}}
-    ]}
-  },
-
-  'inegi-uso': {
-    label:'Uso de suelo y vegetación · INEGI Serie VII', color:'#16a34a',
-    data: {type:'FeatureCollection', features:[
-      {type:'Feature',properties:{uso:'Zona urbana',clave:'H&H',fuente:'INEGI Serie VII 2018'},
-       geometry:{type:'Polygon',coordinates:[[[-102.315,22.14],[-102.285,22.14],[-102.285,22.168],[-102.315,22.168],[-102.315,22.14]]]}},
-      {type:'Feature',properties:{uso:'Agrícola de riego',clave:'Ra',fuente:'INEGI Serie VII 2018'},
-       geometry:{type:'Polygon',coordinates:[[[-102.40,22.14],[-102.32,22.14],[-102.32,22.22],[-102.40,22.22],[-102.40,22.14]]]}},
-      {type:'Feature',properties:{uso:'Pastizal inducido',clave:'PI',fuente:'INEGI Serie VII 2018'},
-       geometry:{type:'Polygon',coordinates:[[[-102.40,22.06],[-102.28,22.06],[-102.28,22.14],[-102.40,22.14],[-102.40,22.06]]]}},
-      {type:'Feature',properties:{uso:'Matorral xerófilo',clave:'MK',fuente:'INEGI Serie VII 2018'},
-       geometry:{type:'Polygon',coordinates:[[[-102.28,22.06],[-102.17,22.06],[-102.17,22.16],[-102.28,22.16],[-102.28,22.06]]]}},
-      {type:'Feature',properties:{uso:'Agrícola temporal',clave:'Ta',fuente:'INEGI Serie VII 2018'},
-       geometry:{type:'Polygon',coordinates:[[[-102.44,22.16],[-102.40,22.16],[-102.40,22.25],[-102.44,22.25],[-102.44,22.16]]]}}
-    ]}
-  },
-
-  'inegi-hid': {
-    label:'Hidrografía · INEGI RHA 2017', color:'#0ea5e9',
-    data: {type:'FeatureCollection', features:[
-      {type:'Feature',properties:{nombre:'Arroyo El Rayo',tipo:'Corriente intermitente',cuenca:'Río Verde',fuente:'INEGI RHA 2017'},
-       geometry:{type:'LineString',coordinates:[[-102.420,22.120],[-102.380,22.135],[-102.345,22.150],[-102.318,22.155],[-102.295,22.145],[-102.270,22.130],[-102.245,22.112]]}},
-      {type:'Feature',properties:{nombre:'Arroyo San Agustín',tipo:'Corriente intermitente',cuenca:'Río Verde',fuente:'INEGI RHA 2017'},
-       geometry:{type:'LineString',coordinates:[[-102.440,22.185],[-102.400,22.188],[-102.370,22.182],[-102.345,22.172],[-102.320,22.165],[-102.295,22.158]]}},
-      {type:'Feature',properties:{nombre:'Canal de riego principal',tipo:'Canal',administracion:'CONAGUA',fuente:'INEGI RHA 2017'},
-       geometry:{type:'LineString',coordinates:[[-102.415,22.210],[-102.380,22.205],[-102.350,22.195],[-102.320,22.185],[-102.295,22.175]]}},
-      {type:'Feature',properties:{nombre:'Presa derivadora El Rayo',tipo:'Cuerpo de agua',fuente:'INEGI RHA 2017'},
-       geometry:{type:'Polygon',coordinates:[[[-102.382,22.138],[-102.372,22.138],[-102.372,22.145],[-102.382,22.145],[-102.382,22.138]]]}}
-    ]}
-  },
-
-  'inegi-cam': {
-    label:'Red de caminos · INEGI RNC 2019', color:'#475569',
-    data: {type:'FeatureCollection', features:[
-      {type:'Feature',properties:{nombre:'Carretera Federal 45',tipo:'Federal',superficie:'Pavimentada',fuente:'INEGI RNC 2019'},
-       geometry:{type:'LineString',coordinates:[[-102.440,22.095],[-102.400,22.110],[-102.360,22.125],[-102.320,22.140],[-102.285,22.152],[-102.250,22.160],[-102.185,22.175]]}},
-      {type:'Feature',properties:{nombre:'Carr. AGS-10 (Pabellón–Rinc. de Romos)',tipo:'Estatal',superficie:'Pavimentada',fuente:'INEGI RNC 2019'},
-       geometry:{type:'LineString',coordinates:[[-102.315,22.155],[-102.300,22.170],[-102.285,22.188],[-102.270,22.205],[-102.255,22.220]]}},
-      {type:'Feature',properties:{nombre:'Camino rural Emiliano Zapata',tipo:'Rural',superficie:'Terracería',fuente:'INEGI RNC 2019'},
-       geometry:{type:'LineString',coordinates:[[-102.290,22.108],[-102.272,22.095],[-102.255,22.085]]}},
-      {type:'Feature',properties:{nombre:'Camino rural Las Ánimas',tipo:'Rural',superficie:'Terracería',fuente:'INEGI RNC 2019'},
-       geometry:{type:'LineString',coordinates:[[-102.300,22.202],[-102.285,22.210],[-102.268,22.218]]}},
-      {type:'Feature',properties:{nombre:'Carr. AGS-90 (Pabellón–Cosío)',tipo:'Estatal',superficie:'Pavimentada',fuente:'INEGI RNC 2019'},
-       geometry:{type:'LineString',coordinates:[[-102.310,22.155],[-102.335,22.165],[-102.360,22.172],[-102.388,22.178],[-102.415,22.185]]}}
-    ]}
-  },
-
-  'inegi-topo': {
-    label:'Curvas de nivel · INEGI Altimetría', color:'#d97706',
-    data: {type:'FeatureCollection', features:[
-      {type:'Feature',properties:{elevacion_m:1900,tipo:'Curva maestra',fuente:'INEGI Altimetría'},
-       geometry:{type:'LineString',coordinates:[[-102.44,22.08],[-102.38,22.07],[-102.30,22.07],[-102.22,22.09],[-102.17,22.12]]}},
-      {type:'Feature',properties:{elevacion_m:1950,tipo:'Curva maestra',fuente:'INEGI Altimetría'},
-       geometry:{type:'LineString',coordinates:[[-102.44,22.13],[-102.40,22.11],[-102.34,22.10],[-102.26,22.11],[-102.19,22.14]]}},
-      {type:'Feature',properties:{elevacion_m:2000,tipo:'Curva maestra',fuente:'INEGI Altimetría'},
-       geometry:{type:'LineString',coordinates:[[-102.44,22.18],[-102.41,22.16],[-102.36,22.15],[-102.29,22.16],[-102.22,22.18]]}},
-      {type:'Feature',properties:{elevacion_m:2050,tipo:'Curva maestra',fuente:'INEGI Altimetría'},
-       geometry:{type:'LineString',coordinates:[[-102.44,22.22],[-102.42,22.20],[-102.38,22.19],[-102.32,22.20],[-102.26,22.22]]}}
-    ]}
-  },
-
-  'inegi-loc': {
-    label:'Estructura socioeconómica · INEGI Censo 2020', color:'#64748b',
-    data: {type:'FeatureCollection', features:[
-      {type:'Feature',properties:{nombre:'AGEB 010060001006',pob_total:6103,viviendas:1580,sin_agua:'8%',sin_drenaje:'3%',piso_tierra:'5%',hacinamiento:'12%',grado_marginacion:'Bajo',fuente:'INEGI Censo 2020'},
-       geometry:{type:'Polygon',coordinates:[[[-102.32,22.13],[-102.28,22.13],[-102.28,22.17],[-102.32,22.17],[-102.32,22.13]]]}},
-      {type:'Feature',properties:{nombre:'AGEB 010060001007',pob_total:4821,viviendas:1245,sin_agua:'15%',sin_drenaje:'9%',piso_tierra:'11%',hacinamiento:'22%',grado_marginacion:'Medio',fuente:'INEGI Censo 2020'},
-       geometry:{type:'Polygon',coordinates:[[[-102.32,22.17],[-102.28,22.17],[-102.28,22.21],[-102.32,22.21],[-102.32,22.17]]]}},
-      {type:'Feature',properties:{nombre:'AGEB 010060001008',pob_total:3214,viviendas:830,sin_agua:'11%',sin_drenaje:'6%',piso_tierra:'7%',hacinamiento:'16%',grado_marginacion:'Bajo',fuente:'INEGI Censo 2020'},
-       geometry:{type:'Polygon',coordinates:[[[-102.32,22.09],[-102.28,22.09],[-102.28,22.13],[-102.32,22.13],[-102.32,22.09]]]}},
-      {type:'Feature',properties:{nombre:'AGEB Rural Oriente',pob_total:1870,viviendas:470,sin_agua:'28%',sin_drenaje:'21%',piso_tierra:'18%',hacinamiento:'35%',grado_marginacion:'Alto',fuente:'INEGI Censo 2020'},
-       geometry:{type:'Polygon',coordinates:[[[-102.28,22.09],[-102.18,22.09],[-102.18,22.21],[-102.28,22.21],[-102.28,22.09]]]}},
-      {type:'Feature',properties:{nombre:'AGEB Rural Poniente',pob_total:1245,viviendas:310,sin_agua:'32%',sin_drenaje:'25%',piso_tierra:'22%',hacinamiento:'38%',grado_marginacion:'Muy alto',fuente:'INEGI Censo 2020'},
-       geometry:{type:'Polygon',coordinates:[[[-102.44,22.09],[-102.32,22.09],[-102.32,22.21],[-102.44,22.21],[-102.44,22.09]]]}}
-    ]}
-  }
-};
+// ── DATOS GeoJSON EMBEBIDOS ──
+// Se mantienen vacíos para evitar usar información demo.
+const GEO_DATA = {};
 
 // ── Capas GeoJSON ya instanciadas ──
 const geoL={}, geoOn={};
@@ -944,8 +779,8 @@ const geoL={}, geoOn={};
 function toggleGJ(id, el){
   const tog = el.querySelector('.ltog');
   const st  = document.getElementById('st-'+id);
-  // Si la capa ya está en miCapasMap (cargada como MIS_CAPAS), usar ese toggle
-  if(miCapasMap[id]){ toggleMiCapa(id,el); return; }
+  // Si existe en MIS_CAPAS, usar siempre archivos locales reales
+  if(MIS_CAPAS_INDEX[id]){ toggleMiCapa(id,el); return; }
   if(geoOn[id]){
     map.removeLayer(geoL[id]);
     tog.classList.remove('on'); el.classList.remove('on'); geoOn[id]=false;
