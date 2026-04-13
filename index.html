@@ -773,14 +773,14 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
 // Cada entrada tiene: id (para el toggle del sidebar), nombre, archivo, color
 // ============================================================
 const MIS_CAPAS = [
-  { id:'limite',       nombre:'Límite municipal',          archivo:'capas/LimitePabellon.geojson', color:'#1d4ed8', weight:2.4, fillOpacity:0.04, radius:4 },
+  { id:'limite',       nombre:'Límite municipal',          archivo:'capas/LimitePabellon.geojson', color:'#1d4ed8', weight:2.4, fillOpacity:0, radius:4 },
   { id:'cuerpos-agua',  nombre:'Cuerpos de agua',            archivo:'capas/Cuerpo_agua_lite.geojson', color:'#0369a1', weight:1.4, fillOpacity:0.24, radius:4 },
   { id:'cnp-inund',     nombre:'Canales y corrientes locales', archivo:'capas/canal.json',              color:'#1e40af', weight:2.0, fillOpacity:0.00, radius:4 },
   { id:'cnp-seq',       nombre:'Cuerpos de agua (inventario)', archivo:'capas/Cuerpo_agua_lite.geojson',color:'#d97706', weight:1.2, fillOpacity:0.10, radius:4 },
   { id:'cnp-hela',      nombre:'Curvas de nivel (proxy heladas)', archivo:'capas/curva_nivel50_l_FeaturesToJS.geojson', color:'#818cf8', weight:1.2, fillOpacity:0.00, radius:3 },
   { id:'cnp-sism',      nombre:'Predios en zona de falla',      archivo:'capas/prediosfallas.json',      color:'#7c3aed', weight:1.2, fillOpacity:0.10, radius:4 },
   { id:'cnb-er',        nombre:'Curvas de nivel 50 m',          archivo:'capas/curva_nivel50_l_FeaturesToJS.geojson', color:'#f97316', weight:1.2, fillOpacity:0.00, radius:3 },
-  { id:'cnb-anp',       nombre:'Límite municipal (ordenamiento)', archivo:'capas/LimitePabellon.geojson', color:'#059669', weight:2.2, fillOpacity:0.02, radius:4 },
+  { id:'cnb-anp',       nombre:'Límite municipal (ordenamiento)', archivo:'capas/LimitePabellon.geojson', color:'#059669', weight:2.2, fillOpacity:0, radius:4 },
   { id:'cnb-veg',       nombre:'Colonias urbanas',              archivo:'capas/colonias.json',           color:'#22c55e', weight:1.2, fillOpacity:0.12, radius:4 },
   { id:'gasoducto',     nombre:'Gasoducto',                  archivo:'capas/Gasoducto.geojson',        color:'#f59e0b', weight:2.4, fillOpacity:0,    radius:4 },
   { id:'servicios',     nombre:'Servicios públicos',         archivo:'capas/servicios_p.json',         color:'#0e7490', weight:1.5, fillOpacity:0.16, radius:5 },
@@ -841,7 +841,7 @@ const WMS = {
 };
 
 const WMS_FALLBACK = {
-  'inegi-mun':         { id:'limite',            nombre:'Límite municipal (fallback)',          archivo:'capas/LimitePabellon.geojson',                  color:'#1d4ed8', weight:2.4, fillOpacity:0.04, radius:4 },
+  'inegi-mun':         { id:'limite',            nombre:'Límite municipal (fallback)',          archivo:'capas/LimitePabellon.geojson',                  color:'#1d4ed8', weight:2.4, fillOpacity:0, radius:4 },
   'inegi-cam':         { id:'inegi-cam-local',   nombre:'Red vial local (fallback)',             archivo:'capas/calles.json',                             color:'#475569', weight:2.0, fillOpacity:0,    radius:4 },
   'inegi-hid':         { id:'inegi-hid-local',   nombre:'Hidrografía local (fallback)',          archivo:'capas/canal.json',                              color:'#0ea5e9', weight:2.0, fillOpacity:0,    radius:4 },
   'inegi-topo':        { id:'inegi-topo-local',  nombre:'Curvas de nivel local (fallback)',      archivo:'capas/curva_nivel50_l_FeaturesToJS.geojson',   color:'#d97706', weight:1.2, fillOpacity:0,    radius:3 },
