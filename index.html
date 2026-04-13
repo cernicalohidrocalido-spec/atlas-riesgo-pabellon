@@ -78,6 +78,32 @@ header{height:var(--hdr);background:#1e3a8a;display:flex;align-items:center;gap:
 .apiop select,.apiop input[type=range]{width:100%}
 .apiop select{font-size:10px;border:1px solid #cbd5e1;border-radius:4px;padding:4px;background:#fff;color:#334155;margin-bottom:6px}
 .apiopv{font-size:10px;color:#475569;text-align:right;margin-top:2px}
+/* ── Sentinel-2 panel ── */
+.s2panel{position:absolute;bottom:82px;left:240px;z-index:501;background:white;border:1px solid #a78bfa;border-radius:9px;padding:10px 12px;box-shadow:0 4px 16px rgba(109,40,217,.15);width:264px;display:none}
+.s2panel.show{display:block}
+.s2hdr{display:flex;align-items:center;gap:6px;margin-bottom:10px;border-bottom:1px solid #ede9fe;padding-bottom:7px}
+.s2logo{font-size:16px;flex-shrink:0}.s2title{font-size:11px;font-weight:700;color:#5b21b6;flex:1}.s2close{cursor:pointer;font-size:13px;color:#a78bfa;line-height:1;background:none;border:none;padding:2px;border-radius:3px}.s2close:hover{color:#7c3aed;background:#ede9fe}
+.s2row{margin-bottom:8px}.s2lbl{font-size:9px;font-weight:700;color:#6d28d9;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;display:flex;justify-content:space-between;align-items:center}
+.s2inp{width:100%;border:1px solid #ddd6fe;border-radius:5px;padding:5px 8px;font-size:11px;color:#1e1b4b;background:#faf5ff;outline:none;box-sizing:border-box}
+.s2inp:focus{border-color:#7c3aed;box-shadow:0 0 0 2px #ede9fe}
+.s2sel{width:100%;border:1px solid #ddd6fe;border-radius:5px;padding:5px 8px;font-size:10px;color:#1e1b4b;background:#faf5ff;cursor:pointer;outline:none}
+.s2range{width:100%;accent-color:#7c3aed;margin:0}
+.s2btns{display:flex;gap:5px;margin-top:10px}
+.s2btn{flex:1;padding:6px 8px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid;transition:all .15s}
+.s2apply{background:#7c3aed;border-color:#7c3aed;color:white}.s2apply:hover{background:#6d28d9}
+.s2remove{background:white;border-color:#ddd6fe;color:#7c3aed}.s2remove:hover{background:#faf5ff;border-color:#7c3aed}
+.s2cat{margin-top:8px;border-top:1px solid #ede9fe;padding-top:8px}
+.s2catbtn{width:100%;background:#faf5ff;border:1px solid #ddd6fe;border-radius:5px;padding:5px 8px;font-size:10px;color:#6d28d9;cursor:pointer;text-align:left;display:flex;align-items:center;gap:5px;margin-bottom:0}
+.s2catbtn:hover{background:#ede9fe;border-color:#c4b5fd}
+.s2scenes{max-height:180px;overflow-y:auto;margin-top:6px}
+.s2scene{background:#faf5ff;border:1px solid #ddd6fe;border-radius:5px;padding:6px 8px;margin-bottom:4px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px}
+.s2scene:hover{background:#ede9fe;border-color:#c4b5fd}.s2scene.sel{background:#ede9fe;border-color:#7c3aed;font-weight:700}
+.s2sdate{font-size:11px;font-weight:600;color:#5b21b6;flex:1}.s2scc{font-size:9px;color:#7c3aed;background:#ede9fe;padding:1px 5px;border-radius:3px;flex-shrink:0}
+.s2link{font-size:9px;color:#7c3aed;text-decoration:none}.s2link:hover{text-decoration:underline}
+.s2hint{font-size:9px;color:#94a3b8;margin-top:5px;line-height:1.5}
+.s2status{font-size:10px;color:#5b21b6;padding:4px 2px;display:none;line-height:1.4;word-break:break-word}
+.s2status.show{display:block}.s2status.err{color:#dc2626}
+.mbt.s2on{background:#ede9fe!important;border-color:#a78bfa!important;color:#6d28d9!important}
 .mbar{position:absolute;bottom:46px;left:50%;transform:translateX(-50%);z-index:500;background:white;border:1px solid #93c5fd;border-radius:5px;padding:5px 12px;font-size:11px;color:var(--t2);display:none;box-shadow:0 2px 8px rgba(0,0,0,.10)}
 .mbar.show{display:block}#mdist{color:var(--blue);font-weight:700}
 .loadbar{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--blue),#93c5fd,transparent);background-size:200% 100%;animation:ld 1.5s infinite;z-index:9999;opacity:0;transition:opacity .3s}
@@ -596,6 +622,7 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
     <div class="mbt" onclick="goHome()" title="Ir al municipio">⌂</div>
     <div class="mbt" onclick="locateUser()" title="Mi ubicación">◎</div>
     <div class="mbt" onclick="fitUL()" title="Ajustar mis capas">⊞</div>
+    <div class="mbt" id="s2Btn" onclick="toggleS2Panel()" title="Imágenes Sentinel-2 · ESA">🛰</div>
   </div>
   <div class="cbar"><span id="ctext">22.1527° N  102.2983° O</span></div>
   <div class="mbar" id="mbar">📏 Midiendo · Clic para agregar puntos · Distancia: <span id="mdist">—</span> <span style="color:#94a3b8;font-size:9px">[Esc] para salir</span></div>
@@ -615,6 +642,74 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
     <input id="apiOpacityRange" type="range" min="10" max="100" value="75" oninput="setSelectedWMSOpacity(this.value)">
     <div class="apiopv" id="apiOpacityVal">75%</div>
   </div>
+
+  <!-- ═══ SENTINEL-2 PANEL ═══ -->
+  <div class="s2panel" id="s2Panel">
+    <div class="s2hdr">
+      <span class="s2logo">🛰</span>
+      <span class="s2title">Sentinel-2 · ESA / Copernicus</span>
+      <button class="s2close" onclick="toggleS2Panel()">✕</button>
+    </div>
+    <div class="s2row">
+      <div class="s2lbl">Instance ID &nbsp;<a href="https://apps.sentinel-hub.com/dashboard/" target="_blank" class="s2link">Cuenta gratuita ↗</a></div>
+      <input class="s2inp" id="s2InstanceId" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+    </div>
+    <div class="s2row">
+      <div class="s2lbl">Composición / Banda</div>
+      <select class="s2sel" id="s2Layer">
+        <option value="TRUE_COLOR">🔴 Color verdadero (RGB)</option>
+        <option value="FALSE_COLOR">🍃 Falso color (NIR-R-G)</option>
+        <option value="NDVI">🌿 NDVI — Índice de vegetación</option>
+        <option value="EVI">🌾 EVI — Vegetación mejorado</option>
+        <option value="SWIR">🔥 SWIR — Suelo quemado / húmedo</option>
+        <option value="AGRICULTURE">🏜 Agricultura (SWIR-NIR-B)</option>
+        <option value="MOISTURE_INDEX">💧 Índice de humedad</option>
+        <option value="WATER_VAPOUR">☁️ Vapor de agua</option>
+      </select>
+    </div>
+    <div class="s2row">
+      <div class="s2lbl">Fecha de adquisición</div>
+      <input class="s2inp" id="s2Date" type="date">
+    </div>
+    <div class="s2row">
+      <div class="s2lbl">Nubosidad máxima &nbsp;<span id="s2CcVal">30%</span></div>
+      <input class="s2range" id="s2Cc" type="range" min="0" max="100" value="30" oninput="document.getElementById('s2CcVal').textContent=this.value+'%'">
+    </div>
+    <div class="s2row">
+      <div class="s2lbl">Opacidad de la capa &nbsp;<span id="s2OpVal">85%</span></div>
+      <input class="s2range" id="s2Op" type="range" min="10" max="100" value="85" oninput="document.getElementById('s2OpVal').textContent=this.value+'%'">
+    </div>
+    <div class="s2hint">Requiere cuenta gratuita en Sentinel Hub. El Instance ID actúa como credencial de acceso al servicio OGC WMS.</div>
+    <div class="s2btns">
+      <button class="s2btn s2remove" onclick="removeSentinel()">✕ Quitar</button>
+      <button class="s2btn s2apply" onclick="applySentinel()">🛰 Aplicar</button>
+    </div>
+    <div class="s2status" id="s2Status"></div>
+    <!-- Catalog API -->
+    <div class="s2cat">
+      <button class="s2catbtn" id="s2CatBtn" onclick="toggleS2Cat(this)">▶ &nbsp;Buscar escenas (Catalog API)</button>
+      <div id="s2CatBody" style="display:none">
+        <div class="s2row" style="margin-top:6px">
+          <div class="s2lbl">Client ID &nbsp;<a href="https://apps.sentinel-hub.com/dashboard/" target="_blank" class="s2link">OAuth2 ↗</a></div>
+          <input class="s2inp" id="s2ClientId" type="text" placeholder="Tu client_id de Sentinel Hub">
+        </div>
+        <div class="s2row">
+          <div class="s2lbl">Client Secret</div>
+          <input class="s2inp" id="s2ClientSecret" type="password" placeholder="Tu client_secret">
+        </div>
+        <div class="s2row">
+          <div class="s2lbl">Rango de fechas</div>
+          <div style="display:flex;gap:4px">
+            <input class="s2inp" id="s2DateFrom" type="date" style="flex:1">
+            <input class="s2inp" id="s2DateTo" type="date" style="flex:1">
+          </div>
+        </div>
+        <button class="s2catbtn" style="justify-content:center;margin-top:4px" onclick="s2CatalogSearch()">🔍 Buscar en área visible</button>
+        <div class="s2scenes" id="s2ScenesList"></div>
+      </div>
+    </div>
+  </div>
+
   <div id="map"></div>
 </div>
 
@@ -1629,6 +1724,154 @@ function doExport(){
 function dl(n,c,t){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:t}));a.download=n;a.click();}
 
 // ============================================================
+// SENTINEL-2 — OGC WMS + Catalog API
+// https://docs.sentinel-hub.com/api/latest/api/ogc/wms/
+// https://docs.sentinel-hub.com/api/latest/api/catalog/
+// ============================================================
+let s2Layer = null;
+
+function toggleS2Panel(){
+  const p = document.getElementById('s2Panel');
+  const btn = document.getElementById('s2Btn');
+  const vis = p.classList.toggle('show');
+  btn.classList.toggle('s2on', vis);
+}
+
+function applySentinel(){
+  const instanceId = document.getElementById('s2InstanceId').value.trim();
+  if(!instanceId){
+    _s2st('⚠ Ingresa tu Instance ID de Sentinel Hub. Crea una cuenta gratuita en apps.sentinel-hub.com', true);
+    return;
+  }
+  const layer   = document.getElementById('s2Layer').value;
+  const dateVal = document.getElementById('s2Date').value;
+  const date    = dateVal || new Date(Date.now()-30*864e5).toISOString().slice(0,10);
+  const cc      = document.getElementById('s2Cc').value;
+  const opacity = parseInt(document.getElementById('s2Op').value)/100;
+
+  if(s2Layer){ map.removeLayer(s2Layer); s2Layer=null; }
+
+  const useJpeg = ['TRUE_COLOR','FALSE_COLOR','AGRICULTURE'].includes(layer);
+  s2Layer = L.tileLayer.wms(
+    `https://services.sentinel-hub.com/ogc/wms/${instanceId}`,
+    {
+      layers:      layer,
+      format:      useJpeg ? 'image/jpeg' : 'image/png',
+      transparent: !useJpeg,
+      version:     '1.1.1',
+      time:        `${date}/${date}`,
+      maxcc:       cc,
+      attribution: '© <a href="https://www.sentinel-hub.com" target="_blank">Sentinel Hub</a> / ESA Copernicus',
+      opacity:     opacity,
+      tileSize:    512,
+      maxZoom:     18,
+      crossOrigin: true
+    }
+  );
+  s2Layer.on('tileerror', ()=>_s2st('⚠ Error al cargar tiles. Verifica el Instance ID, la fecha y tu cuota.',true));
+  s2Layer.on('tileload',  ()=>_s2st(`✅ Sentinel-2 · ${layer} · ${date}`));
+  s2Layer.addTo(map);
+  document.getElementById('s2Btn').classList.add('s2on');
+  localStorage.setItem('s2InstanceId', instanceId);
+  _s2st(`🛰 Cargando Sentinel-2 · ${layer} · ${date}…`);
+}
+
+function removeSentinel(){
+  if(s2Layer){ map.removeLayer(s2Layer); s2Layer=null; }
+  document.getElementById('s2Btn').classList.remove('s2on');
+  _s2st('');
+  showToast('Capa Sentinel-2 eliminada');
+}
+
+function _s2st(msg, isErr){
+  const el = document.getElementById('s2Status');
+  el.textContent = msg;
+  el.className = 's2status' + (msg?' show':'') + (isErr?' err':'');
+}
+
+function toggleS2Cat(btn){
+  const body = document.getElementById('s2CatBody');
+  const vis  = body.style.display !== 'none';
+  body.style.display = vis ? 'none' : 'block';
+  btn.textContent = (vis?'▶':'▼') + ' \u00a0Buscar escenas (Catalog API)';
+}
+
+async function s2CatalogSearch(){
+  const clientId     = document.getElementById('s2ClientId').value.trim();
+  const clientSecret = document.getElementById('s2ClientSecret').value.trim();
+  const dateFrom     = document.getElementById('s2DateFrom').value;
+  const dateTo       = document.getElementById('s2DateTo').value;
+  const cc           = parseInt(document.getElementById('s2Cc').value);
+  const list         = document.getElementById('s2ScenesList');
+
+  if(!clientId || !clientSecret){
+    list.innerHTML='<div class="s2hint" style="color:#dc2626">⚠ Ingresa Client ID y Client Secret para la Catalog API (OAuth2).</div>';
+    return;
+  }
+  if(!dateFrom || !dateTo){
+    list.innerHTML='<div class="s2hint" style="color:#dc2626">⚠ Selecciona el rango de fechas.</div>';
+    return;
+  }
+  list.innerHTML='<div class="s2hint" style="text-align:center">🔄 Obteniendo token OAuth2…</div>';
+  try{
+    // Step 1: client_credentials token
+    const tokRes = await fetch('https://services.sentinel-hub.com/oauth/token',{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:`grant_type=client_credentials&client_id=${encodeURIComponent(clientId)}&client_secret=${encodeURIComponent(clientSecret)}`
+    });
+    if(!tokRes.ok) throw new Error(`Token HTTP ${tokRes.status} — verifica tus credenciales`);
+    const {access_token} = await tokRes.json();
+
+    list.innerHTML='<div class="s2hint" style="text-align:center">🔍 Buscando en Catalog API…</div>';
+
+    // Step 2: Catalog STAC search
+    const b = map.getBounds();
+    const bbox = [+b.getWest().toFixed(4),+b.getSouth().toFixed(4),+b.getEast().toFixed(4),+b.getNorth().toFixed(4)];
+    const catRes = await fetch('https://services.sentinel-hub.com/api/v1/catalog/1.0.0/search',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${access_token}`},
+      body:JSON.stringify({
+        bbox,
+        datetime:`${dateFrom}T00:00:00Z/${dateTo}T23:59:59Z`,
+        collections:['sentinel-2-l2a'],
+        filter:`eo:cloud_cover <= ${cc}`,
+        'filter-lang':'cql2-text',
+        limit:25,
+        fields:{include:['id','properties.datetime','properties.eo:cloud_cover'],exclude:[]}
+      })
+    });
+    if(!catRes.ok) throw new Error(`Catalog HTTP ${catRes.status}`);
+    const data = await catRes.json();
+    _renderS2Scenes(data.features||[]);
+  }catch(e){
+    list.innerHTML=`<div class="s2hint" style="color:#dc2626">⚠ ${e.message}</div>`;
+  }
+}
+
+function _renderS2Scenes(items){
+  const list = document.getElementById('s2ScenesList');
+  if(!items.length){
+    list.innerHTML='<div class="s2hint">Sin escenas con esa configuración. Amplía el rango de fechas o la nubosidad máxima.</div>';
+    return;
+  }
+  list.innerHTML = items.map(it=>{
+    const dt = (it.properties?.datetime||'').slice(0,10);
+    const cc = it.properties?.['eo:cloud_cover'];
+    const ccTxt = typeof cc==='number' ? cc.toFixed(1)+'%' : '—';
+    return `<div class="s2scene" onclick="_s2SelectScene('${dt}',this)"><span class="s2sdate">📸 ${dt}</span><span class="s2scc">☁ ${ccTxt}</span></div>`;
+  }).join('');
+  list.insertAdjacentHTML('afterbegin',`<div class="s2hint">${items.length} escenas encontradas — clic para seleccionar fecha.</div>`);
+}
+
+function _s2SelectScene(date, el){
+  document.getElementById('s2Date').value = date;
+  document.querySelectorAll('.s2scene').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+  showToast(`📅 Escena: ${date} — clic en "Aplicar" para cargarla en el mapa`);
+}
+
+// ============================================================
 // PRINT
 // ============================================================
 function printAtlas(){
@@ -1654,6 +1897,17 @@ window.onload = () => {
   showLd();
   initWMSBadges();
   validateMiCapasBindings();
+  // ── Sentinel-2: valores por defecto y sessionStorage ──
+  (()=>{
+    const d30 = new Date(Date.now()-30*864e5).toISOString().slice(0,10);
+    const d90 = new Date(Date.now()-90*864e5).toISOString().slice(0,10);
+    const d0  = new Date().toISOString().slice(0,10);
+    document.getElementById('s2Date').value     = d30;
+    document.getElementById('s2DateFrom').value = d90;
+    document.getElementById('s2DateTo').value   = d0;
+    const saved = localStorage.getItem('s2InstanceId');
+    if(saved) document.getElementById('s2InstanceId').value = saved;
+  })();
 
   // ── Botones de descarga automáticos ──
   document.querySelectorAll('[onclick*="toggleGJ("]').forEach(el => {
