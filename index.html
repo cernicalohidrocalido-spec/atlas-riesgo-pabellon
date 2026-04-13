@@ -957,9 +957,20 @@ function buildGeoLayer(id){
 
 // Capas WMS oficiales INEGI
 const wmsL={}, wmsOn={};
+const wmsDiag={};
+
+function setWMSState(id,state){
+  const st=document.getElementById('st-'+id);
+  if(!st) return;
+  if(state==='loading'){ st.textContent='...'; st.className='wbadge wload'; return; }
+  if(state==='ok'){ st.textContent='✓'; st.className='wbadge wok'; return; }
+  if(state==='err'){ st.textContent='ERR'; st.className='wbadge werr'; return; }
+  st.textContent='API'; st.className='wbadge wgeo';
+}
 
 function buildWMSLayer(id){
   const def=WMS[id]; if(!def) return;
+  wmsDiag[id]={loaded:0,errors:0,notified:false};
   wmsL[id]=L.tileLayer.wms(WMS_URL,{
     layers:def.layers.map(name=>`Sitio_Inegi:${name}`).join(','),
     format:'image/png',
@@ -970,22 +981,39 @@ function buildWMSLayer(id){
     opacity:def.opacity??0.75,
     uppercase:true
   });
+
+  wmsL[id].on('tileload',()=>{
+    const d=wmsDiag[id]; if(!d) return;
+    d.loaded++;
+    if(d.loaded===1 && d.errors===0) setWMSState(id,'ok');
+  });
+
+  wmsL[id].on('tileerror',()=>{
+    const d=wmsDiag[id]||{loaded:0,errors:0,notified:false};
+    d.errors++;
+    wmsDiag[id]=d;
+    setWMSState(id,'err');
+    if(!d.notified){
+      d.notified=true;
+      const nombre=WMS[id]?.label||id;
+      showToast(`❌ INEGI API sin teselas válidas en "${nombre}".`,6000);
+    }
+  });
 }
 
 function toggleWMS(id,el){
   const tog=el.querySelector('.ltog');
-  const st=document.getElementById('st-'+id);
   if(wmsOn[id]){
     map.removeLayer(wmsL[id]);
     tog.classList.remove('on'); el.classList.remove('on'); wmsOn[id]=false;
-    if(st){st.textContent='API';st.className='wbadge wgeo';}
+    setWMSState(id,'idle');
     return;
   }
   if(!wmsL[id]) buildWMSLayer(id);
   if(!wmsL[id]) return;
+  setWMSState(id,'loading');
   wmsL[id].addTo(map);
   tog.classList.add('on'); el.classList.add('on'); wmsOn[id]=true;
-  if(st){st.textContent='✓';st.className='wbadge wok';}
 }
 
 // ============================================================
@@ -1272,8 +1300,7 @@ function showToast(msg,ms=4000){const t=document.getElementById('toast');t.textC
 // ============================================================
 function initWMSBadges(){
   Object.keys(WMS).forEach(id=>{
-    const st=document.getElementById('st-'+id);
-    if(st){st.textContent='API';st.className='wbadge wgeo';}
+    setWMSState(id,'idle');
   });
 }
 
