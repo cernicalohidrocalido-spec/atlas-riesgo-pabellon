@@ -9,12 +9,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shpjs/3.6.3/shp.min.js"></script>
 <style>
-:root{--bg:#f0f4f9;--bg2:#fff;--bg3:#f4f7fb;--bg4:#e8eef6;--bdr:rgba(30,64,175,.10);--bdr2:rgba(30,64,175,.20);--t:#0f172a;--t2:#334155;--t3:#64748b;--blue:#1d4ed8;--blue2:#2563eb;--blue3:#1e3a8a;--green:#16a34a;--amber:#b45309;--orange:#c2410c;--red:#dc2626;--sidebar:304px;--panel:336px;--hdr:54px}
+:root{--bg:#f0f4f9;--bg2:#fff;--bg3:#f4f7fb;--bg4:#e8eef6;--bdr:rgba(30,64,175,.10);--bdr2:rgba(30,64,175,.20);--t:#0f172a;--t2:#334155;--t3:#64748b;--blue:#1d4ed8;--blue2:#2563eb;--blue3:#1e3a8a;--green:#16a34a;--amber:#b45309;--orange:#c2410c;--red:#dc2626;--sidebar:304px;--panel:336px;--hdr:66px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t);height:100vh;overflow:hidden;display:flex;flex-direction:column;font-size:13px}
 header{height:var(--hdr);background:#1e3a8a;display:flex;align-items:center;gap:10px;padding:0 14px;flex-shrink:0;z-index:1000;border-bottom:1px solid #1e40af}
-.logo{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);color:#fff;font-weight:700;font-size:10px;padding:4px 9px;border-radius:5px;letter-spacing:.5px;white-space:nowrap}
-.htitle{flex:1}.htitle h1{font-size:14px;font-weight:600;color:#fff;line-height:1.2}.htitle p{font-size:10px;color:rgba(255,255,255,.55);margin-top:1px}
+.logo{width:42px;height:42px;border-radius:8px;object-fit:cover;border:1px solid rgba(255,255,255,.35);background:#fff;flex-shrink:0}
+.htitle{flex:1}
+.htitle h1{font-size:13px;font-weight:700;color:#fff;line-height:1.15}
+.htitle p{font-size:10px;color:rgba(255,255,255,.80);margin-top:1px;line-height:1.15}
+.htitle .hline3{font-size:9px;color:rgba(255,255,255,.68);margin-top:1px;line-height:1.15}
 .hactions{display:flex;gap:6px;align-items:center}
 .btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.9);padding:5px 10px;border-radius:5px;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:all .15s}
 .btn:hover{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.5)}
@@ -138,6 +141,9 @@ header{height:var(--hdr);background:#1e3a8a;display:flex;align-items:center;gap:
 .itab{width:100%;border-collapse:collapse;font-size:10px}
 .itab tr{border-bottom:1px solid #f1f5f9}.itab tr:last-child{border-bottom:none}
 .itab td{padding:5px 3px}.itab td:first-child{color:var(--t3)}.itab td:last-child{color:var(--blue3);font-weight:600;text-align:right}
+.sitecred{margin-top:10px;background:var(--bg3);border:1px solid #dbeafe;border-radius:8px;padding:8px;line-height:1.45}
+.sitecred .ct{font-size:9px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
+.sitecred .cv{font-size:10px;color:var(--t2)}
 .tc{display:none}.tc.active{display:block}
 .alitem{background:var(--bg3);border-radius:7px;padding:9px 10px;margin-bottom:5px;border-left:3px solid;display:flex;gap:7px;border-top:1px solid #f1f5f9;border-right:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9}
 .altitle{font-size:11px;font-weight:600;color:var(--t)}.albody{font-size:10px;color:var(--t3);margin-top:2px;line-height:1.5}.altime{font-size:9px;color:#94a3b8;margin-top:3px}
@@ -186,10 +192,11 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
 <body>
 
 <header>
-  <div class="logo">ATLAS RIESGO</div>
+  <img class="logo" src="imagenes/logo.jpg" alt="Logo del Municipio de Pabellón de Arteaga">
   <div class="htitle">
-    <h1>Pabellón de Arteaga — Aguascalientes</h1>
-    <p>Sistema Municipal de Información de Riesgos · v3.0 · CENAPRED / INEGI / CONABIO</p>
+    <h1>Ayuntamiento de Pabellón de Arteaga</h1>
+    <p>Secretaría del H. Ayuntamiento</p>
+    <div class="hline3">Instituto Municipal de Biodiversidad y Protección Ambiental</div>
   </div>
   <div class="hactions">
     <div class="live-badge">EN VIVO</div>
@@ -705,6 +712,11 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
       <tr><td>Vientos</td><td>SO–NE / NE–SO</td></tr>
       <tr><td>Colindancias</td><td>Cosío · Tepezalá · S.J. Gracia</td></tr>
     </table>
+    <div class="sitecred">
+      <div class="ct">Créditos del sitio</div>
+      <div class="cv"><b>Desarrollador:</b> Biólogo Luis Felipe Lozano Román</div>
+      <div class="cv">Instituto Municipal de Biodiversidad y Protección Ambiental</div>
+    </div>
   </div>
 </aside>
 
