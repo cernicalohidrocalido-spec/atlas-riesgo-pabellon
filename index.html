@@ -647,85 +647,24 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
   <div class="s2panel" id="s2Panel">
     <div class="s2hdr">
       <span class="s2logo">🛰</span>
-      <span class="s2title">Imágenes Sentinel-2 · ESA</span>
+      <span class="s2title">Sentinel-2 Cloudless · EOX / ESA</span>
       <button class="s2close" onclick="toggleS2Panel()">✕</button>
     </div>
 
-    <!-- FUENTE -->
     <div class="s2row">
-      <div class="s2lbl">Fuente</div>
-      <select class="s2sel" id="s2Source" onchange="s2SetMode(this.value)">
-        <option value="eox">✅ EOX Cloudless — gratuito, sin cuenta</option>
-        <option value="hub">🔐 Sentinel Hub WMS — avanzado (requiere cuenta)</option>
-      </select>
+      <div class="s2lbl">Año del mosaico &nbsp;<span id="s2YearVal">2023</span></div>
+      <input class="s2range" id="s2Year" type="range" min="2018" max="2023" value="2023"
+        oninput="document.getElementById('s2YearVal').textContent=this.value">
     </div>
 
-    <!-- ══ MODO EOX (default) ══ -->
-    <div id="s2EoxSection">
-      <div class="s2row">
-        <div class="s2lbl">Año del mosaico &nbsp;<span id="s2YearVal">2023</span></div>
-        <input class="s2range" id="s2Year" type="range" min="2018" max="2023" value="2023"
-          oninput="document.getElementById('s2YearVal').textContent=this.value">
-      </div>
-      <div class="s2hint">Mosaico anual sin nubes de Sentinel-2 · EOX IT Services / ESA Copernicus · sin registro requerido.</div>
-    </div>
-
-    <!-- ══ MODO HUB (avanzado) ══ -->
-    <div id="s2HubSection" style="display:none">
-      <div class="s2row">
-        <div class="s2lbl">Instance ID &nbsp;<a href="https://insights.planet.com/" target="_blank" class="s2link">Planet Insights ↗</a></div>
-        <input class="s2inp" id="s2InstanceId" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
-      </div>
-      <div class="s2row">
-        <div class="s2lbl">Composición / Banda</div>
-        <select class="s2sel" id="s2Layer">
-          <option value="TRUE_COLOR">🔴 Color verdadero (RGB)</option>
-          <option value="FALSE_COLOR">🍃 Falso color (NIR-R-G)</option>
-          <option value="NDVI">🌿 NDVI — Índice de vegetación</option>
-          <option value="EVI">🌾 EVI — Vegetación mejorado</option>
-          <option value="SWIR">🔥 SWIR — Suelo quemado / húmedo</option>
-          <option value="AGRICULTURE">🏜 Agricultura (SWIR-NIR-B)</option>
-          <option value="MOISTURE_INDEX">💧 Índice de humedad</option>
-        </select>
-      </div>
-      <div class="s2row">
-        <div class="s2lbl">Fecha de adquisición</div>
-        <input class="s2inp" id="s2Date" type="date">
-      </div>
-      <div class="s2row">
-        <div class="s2lbl">Nubosidad máxima &nbsp;<span id="s2CcVal">30%</span></div>
-        <input class="s2range" id="s2Cc" type="range" min="0" max="100" value="30" oninput="document.getElementById('s2CcVal').textContent=this.value+'%'">
-      </div>
-      <!-- Catalog API -->
-      <div class="s2cat" style="margin-top:6px">
-        <button class="s2catbtn" id="s2CatBtn" onclick="toggleS2Cat(this)">▶ &nbsp;Buscar escenas (Catalog API)</button>
-        <div id="s2CatBody" style="display:none">
-          <div class="s2row" style="margin-top:6px">
-            <div class="s2lbl">Client ID</div>
-            <input class="s2inp" id="s2ClientId" type="text" placeholder="client_id de Planet/Sentinel Hub">
-          </div>
-          <div class="s2row">
-            <div class="s2lbl">Client Secret</div>
-            <input class="s2inp" id="s2ClientSecret" type="password" placeholder="client_secret">
-          </div>
-          <div class="s2row">
-            <div class="s2lbl">Rango de fechas</div>
-            <div style="display:flex;gap:4px">
-              <input class="s2inp" id="s2DateFrom" type="date" style="flex:1">
-              <input class="s2inp" id="s2DateTo" type="date" style="flex:1">
-            </div>
-          </div>
-          <button class="s2catbtn" style="justify-content:center;margin-top:4px" onclick="s2CatalogSearch()">🔍 Buscar en área visible</button>
-          <div class="s2scenes" id="s2ScenesList"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Opacidad (compartida) -->
-    <div class="s2row" style="margin-top:8px">
+    <div class="s2row">
       <div class="s2lbl">Opacidad &nbsp;<span id="s2OpVal">85%</span></div>
-      <input class="s2range" id="s2Op" type="range" min="10" max="100" value="85" oninput="document.getElementById('s2OpVal').textContent=this.value+'%'">
+      <input class="s2range" id="s2Op" type="range" min="10" max="100" value="85"
+        oninput="document.getElementById('s2OpVal').textContent=this.value+'%'">
     </div>
+
+    <div class="s2hint">Mosaicos anuales sin nubes de Sentinel-2 · EOX IT Services / ESA Copernicus · gratuito, sin registro.</div>
+
     <div class="s2btns">
       <button class="s2btn s2remove" onclick="removeSentinel()">✕ Quitar</button>
       <button class="s2btn s2apply" onclick="applySentinel()">🛰 Aplicar</button>
@@ -1760,70 +1699,25 @@ function toggleS2Panel(){
   btn.classList.toggle('s2on', vis);
 }
 
-function s2SetMode(mode){
-  document.getElementById('s2EoxSection').style.display = mode==='eox' ? 'block' : 'none';
-  document.getElementById('s2HubSection').style.display = mode==='hub' ? 'block' : 'none';
-}
-
 function applySentinel(){
-  const mode    = document.getElementById('s2Source').value;
+  const year    = document.getElementById('s2Year').value;
   const opacity = parseInt(document.getElementById('s2Op').value)/100;
   if(s2Layer){ map.removeLayer(s2Layer); s2Layer=null; }
-
-  if(mode === 'eox'){
-    // ── EOX Cloudless: mosaicos anuales sin nubes, sin autenticación ──
-    const year = document.getElementById('s2Year').value;
-    s2Layer = L.tileLayer(
-      `https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-${year}_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg`,
-      {
-        attribution: `© <a href="https://cloudless.eox.at" target="_blank">EOX Sentinel-2 Cloudless ${year}</a> / ESA Copernicus`,
-        opacity,
-        maxZoom: 17,
-        tileSize: 256,
-        crossOrigin: true
-      }
-    );
-    s2Layer.on('tileerror', ()=>_s2st('⚠ Error al cargar tiles EOX. Verifica tu conexión.', true));
-    s2Layer.on('tileload',  ()=>_s2st(`✅ Sentinel-2 cloudless ${year} · EOX / ESA`));
-    s2Layer.addTo(map);
-    document.getElementById('s2Btn').classList.add('s2on');
-    _s2st(`🛰 Cargando Sentinel-2 cloudless ${year}…`);
-
-  } else {
-    // ── Sentinel Hub WMS ──
-    const instanceId = document.getElementById('s2InstanceId').value.trim();
-    if(!instanceId){
-      _s2st('⚠ Ingresa tu Instance ID de Sentinel Hub (Planet Insights Platform).', true);
-      return;
+  s2Layer = L.tileLayer(
+    `https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-${year}_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg`,
+    {
+      attribution: `© <a href="https://cloudless.eox.at" target="_blank">EOX Sentinel-2 Cloudless ${year}</a> / ESA Copernicus`,
+      opacity,
+      maxZoom: 17,
+      tileSize: 256,
+      crossOrigin: true
     }
-    const layer   = document.getElementById('s2Layer').value;
-    const dateVal = document.getElementById('s2Date').value;
-    const date    = dateVal || new Date(Date.now()-30*864e5).toISOString().slice(0,10);
-    const cc      = document.getElementById('s2Cc').value;
-    const useJpeg = ['TRUE_COLOR','FALSE_COLOR','AGRICULTURE'].includes(layer);
-    s2Layer = L.tileLayer.wms(
-      `https://services.sentinel-hub.com/ogc/wms/${instanceId}`,
-      {
-        layers:      layer,
-        format:      useJpeg ? 'image/jpeg' : 'image/png',
-        transparent: !useJpeg,
-        version:     '1.1.1',
-        time:        `${date}/${date}`,
-        maxcc:       cc,
-        attribution: '© <a href="https://www.sentinel-hub.com" target="_blank">Sentinel Hub</a> / ESA Copernicus',
-        opacity,
-        tileSize:    512,
-        maxZoom:     18,
-        crossOrigin: true
-      }
-    );
-    s2Layer.on('tileerror', ()=>_s2st('⚠ Error. Verifica el Instance ID, la fecha y la cuota disponible.', true));
-    s2Layer.on('tileload',  ()=>_s2st(`✅ Sentinel-2 · ${layer} · ${date}`));
-    s2Layer.addTo(map);
-    localStorage.setItem('s2InstanceId', instanceId);
-    _s2st(`🛰 Cargando Sentinel-2 · ${layer} · ${date}…`);
-    document.getElementById('s2Btn').classList.add('s2on');
-  }
+  );
+  s2Layer.on('tileerror', ()=>_s2st('⚠ Error al cargar tiles EOX. Verifica tu conexión.', true));
+  s2Layer.on('tileload',  ()=>_s2st(`✅ Sentinel-2 cloudless ${year} · EOX / ESA`));
+  s2Layer.addTo(map);
+  document.getElementById('s2Btn').classList.add('s2on');
+  _s2st(`🛰 Cargando Sentinel-2 cloudless ${year}…`);
 }
 
 function removeSentinel(){
@@ -1837,88 +1731,6 @@ function _s2st(msg, isErr){
   const el = document.getElementById('s2Status');
   el.textContent = msg;
   el.className = 's2status' + (msg?' show':'') + (isErr?' err':'');
-}
-
-function toggleS2Cat(btn){
-  const body = document.getElementById('s2CatBody');
-  const vis  = body.style.display !== 'none';
-  body.style.display = vis ? 'none' : 'block';
-  btn.textContent = (vis?'▶':'▼') + ' \u00a0Buscar escenas (Catalog API)';
-}
-
-async function s2CatalogSearch(){
-  const clientId     = document.getElementById('s2ClientId').value.trim();
-  const clientSecret = document.getElementById('s2ClientSecret').value.trim();
-  const dateFrom     = document.getElementById('s2DateFrom').value;
-  const dateTo       = document.getElementById('s2DateTo').value;
-  const cc           = parseInt(document.getElementById('s2Cc').value);
-  const list         = document.getElementById('s2ScenesList');
-
-  if(!clientId || !clientSecret){
-    list.innerHTML='<div class="s2hint" style="color:#dc2626">⚠ Ingresa Client ID y Client Secret para la Catalog API (OAuth2).</div>';
-    return;
-  }
-  if(!dateFrom || !dateTo){
-    list.innerHTML='<div class="s2hint" style="color:#dc2626">⚠ Selecciona el rango de fechas.</div>';
-    return;
-  }
-  list.innerHTML='<div class="s2hint" style="text-align:center">🔄 Obteniendo token OAuth2…</div>';
-  try{
-    // Step 1: client_credentials token
-    const tokRes = await fetch('https://services.sentinel-hub.com/oauth/token',{
-      method:'POST',
-      headers:{'Content-Type':'application/x-www-form-urlencoded'},
-      body:`grant_type=client_credentials&client_id=${encodeURIComponent(clientId)}&client_secret=${encodeURIComponent(clientSecret)}`
-    });
-    if(!tokRes.ok) throw new Error(`Token HTTP ${tokRes.status} — verifica tus credenciales`);
-    const {access_token} = await tokRes.json();
-
-    list.innerHTML='<div class="s2hint" style="text-align:center">🔍 Buscando en Catalog API…</div>';
-
-    // Step 2: Catalog STAC search
-    const b = map.getBounds();
-    const bbox = [+b.getWest().toFixed(4),+b.getSouth().toFixed(4),+b.getEast().toFixed(4),+b.getNorth().toFixed(4)];
-    const catRes = await fetch('https://services.sentinel-hub.com/api/v1/catalog/1.0.0/search',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${access_token}`},
-      body:JSON.stringify({
-        bbox,
-        datetime:`${dateFrom}T00:00:00Z/${dateTo}T23:59:59Z`,
-        collections:['sentinel-2-l2a'],
-        filter:`eo:cloud_cover <= ${cc}`,
-        'filter-lang':'cql2-text',
-        limit:25,
-        fields:{include:['id','properties.datetime','properties.eo:cloud_cover'],exclude:[]}
-      })
-    });
-    if(!catRes.ok) throw new Error(`Catalog HTTP ${catRes.status}`);
-    const data = await catRes.json();
-    _renderS2Scenes(data.features||[]);
-  }catch(e){
-    list.innerHTML=`<div class="s2hint" style="color:#dc2626">⚠ ${e.message}</div>`;
-  }
-}
-
-function _renderS2Scenes(items){
-  const list = document.getElementById('s2ScenesList');
-  if(!items.length){
-    list.innerHTML='<div class="s2hint">Sin escenas con esa configuración. Amplía el rango de fechas o la nubosidad máxima.</div>';
-    return;
-  }
-  list.innerHTML = items.map(it=>{
-    const dt = (it.properties?.datetime||'').slice(0,10);
-    const cc = it.properties?.['eo:cloud_cover'];
-    const ccTxt = typeof cc==='number' ? cc.toFixed(1)+'%' : '—';
-    return `<div class="s2scene" onclick="_s2SelectScene('${dt}',this)"><span class="s2sdate">📸 ${dt}</span><span class="s2scc">☁ ${ccTxt}</span></div>`;
-  }).join('');
-  list.insertAdjacentHTML('afterbegin',`<div class="s2hint">${items.length} escenas encontradas — clic para seleccionar fecha.</div>`);
-}
-
-function _s2SelectScene(date, el){
-  document.getElementById('s2Date').value = date;
-  document.querySelectorAll('.s2scene').forEach(e=>e.classList.remove('sel'));
-  el.classList.add('sel');
-  showToast(`📅 Escena: ${date} — clic en "Aplicar" para cargarla en el mapa`);
 }
 
 // ============================================================
@@ -1947,18 +1759,16 @@ window.onload = () => {
   showLd();
   initWMSBadges();
   validateMiCapasBindings();
-  // ── Sentinel-2: valores por defecto y sessionStorage ──
-  (()=>{
-    const d30 = new Date(Date.now()-30*864e5).toISOString().slice(0,10);
-    const d90 = new Date(Date.now()-90*864e5).toISOString().slice(0,10);
-    const d0  = new Date().toISOString().slice(0,10);
-    document.getElementById('s2Date').value     = d30;
-    document.getElementById('s2DateFrom').value = d90;
-    document.getElementById('s2DateTo').value   = d0;
-    const saved = localStorage.getItem('s2InstanceId');
-    if(saved) document.getElementById('s2InstanceId').value = saved;
-    s2SetMode('eox'); // EOX gratuito como modo por defecto
-  })();
+  // ── Auto-enfoque al límite municipal en cada carga ──
+  fetch('capas/LimitePabellon.geojson')
+    .then(r => r.json())
+    .then(data => {
+      try {
+        const b = L.geoJSON(data).getBounds();
+        if(b.isValid()) map.fitBounds(b, { padding:[30,30] });
+      } catch(e) { /* fallback a CENTER/zoom12 ya establecido */ }
+    })
+    .catch(() => { /* no bloquear si falla */ });
 
   // ── Botones de descarga automáticos ──
   document.querySelectorAll('[onclick*="toggleGJ("]').forEach(el => {
