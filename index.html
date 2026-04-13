@@ -80,6 +80,8 @@ header{height:var(--hdr);background:#1e3a8a;display:flex;align-items:center;gap:
 .bmbtns{display:flex;gap:3px}
 .bmb{padding:3px 7px;border-radius:4px;font-size:10px;cursor:pointer;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;transition:all .15s}
 .bmb.active{background:var(--blue);border-color:var(--blue);color:white}.bmb:hover:not(.active){background:#dbeafe;border-color:#93c5fd;color:var(--blue)}
+.bmsel-extra{margin-top:6px}
+.bmsel-extra select{width:100%;font-size:10px;border:1px solid #cbd5e1;border-radius:4px;padding:3px 6px;background:#fff;color:#334155}
 /* ── Sentinel-2 panel ── */
 .s2panel{position:absolute;bottom:82px;left:240px;z-index:501;background:white;border:1px solid #a78bfa;border-radius:9px;padding:10px 12px;box-shadow:0 4px 16px rgba(109,40,217,.15);width:264px;display:none}
 .s2panel.show{display:block}
@@ -641,6 +643,13 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
       <div class="bmb" id="bb-topo" onclick="setBM('topo',this)">Topo</div>
       <div class="bmb" id="bb-dark" onclick="setBM('dark',this)">Oscuro</div>
     </div>
+    <div class="bmsel-extra">
+      <div class="bml" style="margin-bottom:4px">Modo de datos</div>
+      <select id="dataModeSel" onchange="setDatasetMode(this.value)">
+        <option value="lite">⚡ Rendimiento (lite)</option>
+        <option value="full">🧪 Detalle completo</option>
+      </select>
+    </div>
   </div>
 
   <!-- ═══ SENTINEL-2 PANEL ═══ -->
@@ -1020,10 +1029,11 @@ async function enableWMSFallback(id){
   }
   showLd();
   try{
-    const r=await fetch(cap.archivo);
+    const archivo=getWmsFallbackArchivo(id, cap.archivo);
+    const r=await fetch(archivo);
     if(!r.ok) throw new Error(r.status);
     const data=await r.json();
-    const lyr=buildMiLayer(data,cap).addTo(map);
+    const lyr=buildMiLayer(data,{...cap,archivo}).addTo(map);
     wmsFallbackOn[id]=lyr;
     setWMSState(id,'fb');
     showToast(`⚠ API INEGI no disponible: usando fallback local para ${WMS[id]?.label||id}.`,5000);
@@ -1219,6 +1229,64 @@ function toggleCat(id){
 // ============================================================
 const MIS_CAPAS_INDEX = Object.fromEntries(MIS_CAPAS.map(cap=>[cap.id,cap]));
 const miCapasMap={};  // id -> {layer, on:bool}
+const DATASET_MODE = { value:'lite' };
+const DATASET_OVERRIDES = {
+  'cuerpos-agua': { lite:'capas/Cuerpo_agua_lite.geojson', full:'capas/Cuerpo_agua.geojson' },
+  'cnp-seq':      { lite:'capas/Cuerpo_agua_lite.geojson', full:'capas/Cuerpo_agua.geojson' },
+  'fallas':       { lite:'capas/fallas_2024_lite.geojson', full:'capas/fallas_2024.geojson' }
+};
+const WMS_FALLBACK_OVERRIDES = {
+  'inegi-hidro-div': { lite:'capas/Cuerpo_agua_lite.geojson', full:'capas/Cuerpo_agua.geojson' }
+};
+
+function getMiCapaArchivo(id){
+  const cap = MIS_CAPAS_INDEX[id];
+  if(!cap) return null;
+  const over = DATASET_OVERRIDES[id];
+  return over ? over[DATASET_MODE.value] : cap.archivo;
+}
+
+function getWmsFallbackArchivo(id, fallbackDefault){
+  const over = WMS_FALLBACK_OVERRIDES[id];
+  return over ? over[DATASET_MODE.value] : fallbackDefault;
+}
+
+function setDatasetMode(mode){
+  if(mode!=='lite' && mode!=='full') return;
+  if(DATASET_MODE.value===mode) return;
+
+  const reactivar=[];
+  Object.keys(DATASET_OVERRIDES).forEach(id=>{
+    const entry=miCapasMap[id];
+    if(!entry) return;
+    if(entry.on) reactivar.push(id);
+    if(map.hasLayer(entry.layer)) map.removeLayer(entry.layer);
+    delete miCapasMap[id];
+
+    const el=document.getElementById('li-'+id);
+    if(el){
+      el.classList.remove('on');
+      const tg=el.querySelector('.ltog'); if(tg) tg.classList.remove('on');
+      const st=el.querySelector('.wbadge'); if(st){ st.textContent='FILE'; st.className='wbadge wgeo'; }
+    }
+  });
+
+  DATASET_MODE.value=mode;
+
+  if(wmsFallbackOn['inegi-hidro-div']){
+    if(map.hasLayer(wmsFallbackOn['inegi-hidro-div'])) map.removeLayer(wmsFallbackOn['inegi-hidro-div']);
+    wmsFallbackOn['inegi-hidro-div']=null;
+    if(wmsOn['inegi-hidro-div']) enableWMSFallback('inegi-hidro-div');
+  }
+
+  reactivar.forEach(id=>{
+    const el=document.getElementById('li-'+id);
+    if(el) toggleMiCapa(id,el);
+  });
+
+  actualizarResumenMunicipal();
+  showToast(mode==='lite' ? '⚡ Modo rendimiento activado' : '🧪 Modo detalle activado', 3000);
+}
 
 function buildMiLayer(data, cap){
   return L.geoJSON(data,{
@@ -1250,12 +1318,13 @@ function toggleMiCapa(id,el){
   if(!entry){
     const cap=MIS_CAPAS_INDEX[id];
     if(!cap){ showToast(`⚠ Capa "${id}" aún no disponible.`,5000); return; }
+    const archivo=getMiCapaArchivo(id);
     if(st){st.textContent='...';st.className='wbadge wload';}
     showLd();
-    fetch(cap.archivo)
+    fetch(archivo)
       .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
       .then(data=>{
-        const layer=buildMiLayer(data,cap);
+        const layer=buildMiLayer(data,{...cap,archivo});
         miCapasMap[id]={layer,on:false};
         hideLd();
         if(st){st.textContent='OK';st.className='wbadge wok';}
@@ -1264,7 +1333,7 @@ function toggleMiCapa(id,el){
       .catch(err=>{
         hideLd();
         if(st){st.textContent='ERR';st.className='wbadge werr';}
-        showToast(`❌ No se pudo cargar ${cap.archivo} (${err.message})`,5000);
+        showToast(`❌ No se pudo cargar ${archivo} (${err.message})`,5000);
       });
     return;
   }
@@ -1878,6 +1947,8 @@ window.onload = () => {
   initWMSBadges();
   validateMiCapasBindings();
   initPerLayerOpacityControls();
+  const dm=document.getElementById('dataModeSel');
+  if(dm) dm.value=DATASET_MODE.value;
   DEFAULT_PANEL.rph = document.querySelector('.rph')?.innerHTML || '';
   DEFAULT_PANEL.rpb = document.querySelector('.rpb')?.innerHTML || '';
   actualizarResumenMunicipal();
