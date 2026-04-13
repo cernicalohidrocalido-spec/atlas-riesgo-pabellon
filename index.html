@@ -717,6 +717,18 @@ const WMS = {
   'inegi-topoformas':  { label:'Sistemas de topoformas',        layers:['sistema_topoformas'],                                             opacity:0.62 }
 };
 
+const WMS_FALLBACK = {
+  'inegi-mun':         { id:'limite',            nombre:'Límite municipal (fallback)',          archivo:'capas/LimitePabellon.geojson',                  color:'#1d4ed8', weight:2.4, fillOpacity:0.04, radius:4 },
+  'inegi-cam':         { id:'inegi-cam-local',   nombre:'Red vial local (fallback)',             archivo:'capas/calles.json',                             color:'#475569', weight:2.0, fillOpacity:0,    radius:4 },
+  'inegi-hid':         { id:'inegi-hid-local',   nombre:'Hidrografía local (fallback)',          archivo:'capas/canal.json',                              color:'#0ea5e9', weight:2.0, fillOpacity:0,    radius:4 },
+  'inegi-topo':        { id:'inegi-topo-local',  nombre:'Curvas de nivel local (fallback)',      archivo:'capas/curva_nivel50_l_FeaturesToJS.geojson',   color:'#d97706', weight:1.2, fillOpacity:0,    radius:3 },
+  'inegi-uso':         { id:'inegi-uso-local',   nombre:'Colonias local (fallback)',             archivo:'capas/colonias.json',                           color:'#16a34a', weight:1.3, fillOpacity:0.10, radius:4 },
+  'inegi-est':         { id:'inegi-est-local',   nombre:'Gasolinerías local (fallback)',         archivo:'capas/gasolinerias.json',                       color:'#64748b', weight:1.2, fillOpacity:0.18, radius:5 },
+  'inegi-loc':         { id:'inegi-loc-local',   nombre:'Comercios local (fallback)',            archivo:'capas/comercios.json',                          color:'#64748b', weight:1.2, fillOpacity:0.16, radius:4 },
+  'inegi-geol-fallas': { id:'inegi-fallas-local',nombre:'Predios en falla (fallback)',           archivo:'capas/prediosfallas.json',                      color:'#b91c1c', weight:1.2, fillOpacity:0.12, radius:4 },
+  'inegi-hidro-div':   { id:'inegi-hidro-local', nombre:'Cuerpos de agua local (fallback)',      archivo:'capas/Cuerpo_agua.geojson',                     color:'#0369a1', weight:1.2, fillOpacity:0.20, radius:4 }
+};
+
 // ── TILES XYZ DE INEGI (funcionan sin CORS porque son imágenes, no datos) ──
 // Estos sí se cargan desde cualquier dominio público.
 const INEGI_TILES = {
@@ -972,6 +984,7 @@ function buildGeoLayer(id){
 // Capas WMS oficiales INEGI
 const wmsL={}, wmsOn={};
 const wmsDiag={};
+const wmsFallbackOn={};
 
 function setWMSState(id,state){
   const st=document.getElementById('st-'+id);
@@ -979,7 +992,33 @@ function setWMSState(id,state){
   if(state==='loading'){ st.textContent='...'; st.className='wbadge wload'; return; }
   if(state==='ok'){ st.textContent='✓'; st.className='wbadge wok'; return; }
   if(state==='err'){ st.textContent='ERR'; st.className='wbadge werr'; return; }
+  if(state==='fb'){ st.textContent='FB'; st.className='wbadge wwarn'; return; }
   st.textContent='API'; st.className='wbadge wgeo';
+}
+
+async function enableWMSFallback(id){
+  const cap=WMS_FALLBACK[id];
+  if(!cap) return false;
+  if(wmsFallbackOn[id]){
+    if(!map.hasLayer(wmsFallbackOn[id])) wmsFallbackOn[id].addTo(map);
+    setWMSState(id,'fb');
+    return true;
+  }
+  showLd();
+  try{
+    const r=await fetch(cap.archivo);
+    if(!r.ok) throw new Error(r.status);
+    const data=await r.json();
+    const lyr=buildMiLayer(data,cap).addTo(map);
+    wmsFallbackOn[id]=lyr;
+    setWMSState(id,'fb');
+    showToast(`⚠ API INEGI no disponible: usando fallback local para ${WMS[id]?.label||id}.`,5000);
+    return true;
+  }catch(e){
+    setWMSState(id,'err');
+    showToast(`❌ Falló API y fallback de ${WMS[id]?.label||id} (${e.message})`,6000);
+    return false;
+  }finally{ hideLd(); }
 }
 
 function buildWMSLayer(id){
@@ -1011,6 +1050,7 @@ function buildWMSLayer(id){
       d.notified=true;
       const nombre=WMS[id]?.label||id;
       showToast(`❌ INEGI API sin teselas válidas en "${nombre}".`,6000);
+      if(wmsOn[id]) enableWMSFallback(id);
     }
   });
 }
@@ -1107,7 +1147,9 @@ function toggleWMS(id,el){
   const tog=el.querySelector('.ltog');
   if(wmsOn[id]){
     map.removeLayer(wmsL[id]);
+    if(wmsFallbackOn[id]) map.removeLayer(wmsFallbackOn[id]);
     tog.classList.remove('on'); el.classList.remove('on'); wmsOn[id]=false;
+    wmsFallbackOn[id]=null;
     setWMSState(id,'idle');
     refreshApiLayerSelector();
     return;
