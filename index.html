@@ -666,8 +666,10 @@ input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px}
 // Cada entrada tiene: id (para el toggle del sidebar), nombre, archivo, color
 // ============================================================
 const MIS_CAPAS = [
-  // Activa aquí únicamente tus capas propias exportadas desde ArcGIS Pro.
-  // Las capas oficiales de INEGI ahora se cargan por WMS desde la API de INEGI.
+  { id:'cuerpos-agua',  nombre:'Cuerpos de agua',            archivo:'capas/Cuerpo_agua.geojson',      color:'#0369a1', weight:1.4, fillOpacity:0.24, radius:4 },
+  { id:'gasoducto',     nombre:'Gasoducto',                  archivo:'capas/Gasoducto.geojson',        color:'#f59e0b', weight:2.4, fillOpacity:0,    radius:4 },
+  { id:'servicios',     nombre:'Servicios públicos',         archivo:'capas/servicios_p.json',         color:'#0e7490', weight:1.5, fillOpacity:0.16, radius:5 },
+  { id:'predios-fallas',nombre:'Predios en zona de falla',   archivo:'capas/prediosfallas.json',       color:'#dc2626', weight:1.2, fillOpacity:0.12, radius:4 },
 ];
 
 // ============================================================
